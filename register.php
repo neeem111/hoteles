@@ -3,7 +3,6 @@ include("conexion.php");
 
 $mensaje = "";
 
-// Si se envió el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name']);
     $age = trim($_POST['age']);
@@ -11,28 +10,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
-    // Encriptar la contraseña antes de guardar
     $password_hashed = password_hash($password, PASSWORD_DEFAULT);
+    $rol = 'Cliente'; 
 
-    // Verificar si el correo ya está registrado
-    $check = $conn->prepare("SELECT * FROM users WHERE Email = ?");
+    // Verificar duplicado de email
+    $check = $conn->prepare("SELECT 1 FROM users WHERE Email = ?");
     $check->bind_param("s", $email);
     $check->execute();
     $result = $check->get_result();
 
     if ($result && $result->num_rows > 0) {
-        $mensaje = "⚠️ Este correo ya está registrado.";
+        $mensaje = "Este correo ya está registrado.";
     } else {
-        // Insertar nuevo usuario
-        $stmt = $conn->prepare("INSERT INTO users (Name, Age, Address, Email, Password) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sisss", $name, $age, $address, $email, $password_hashed);
+        $stmt = $conn->prepare(
+            "INSERT INTO users (Name, Age, Address, Email, Password, Rol)
+             VALUES (?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sissss", $name, $age, $address, $email, $password_hashed, $rol);
 
         if ($stmt->execute()) {
-            // Redirigir automáticamente al login después del registro
             header("Location: login.php?msg=Registro+exitoso,+ahora+puedes+iniciar+sesión");
             exit();
         } else {
-            $mensaje = "❌ Error al registrar usuario.";
+            $mensaje = "Error al registrar usuario.";
         }
     }
 }
