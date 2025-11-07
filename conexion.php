@@ -9,4 +9,5 @@ $conn = new mysqli($servidor, $usuario, $clave, $basededatos);
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
+//Probando usuario
 ?>
