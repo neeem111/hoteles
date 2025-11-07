@@ -54,7 +54,7 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
             $stmt->bind_param("sissss", $name, $age, $address, $email, $password_hashed, $rol);
 
             if ($stmt->execute()) {
-                // Opcional: cerrar el pase del candado tras registrar
+                // Cerrar el pase del candado tras registrar
                 unset($_SESSION['admin_gate']);
                 header("Location: login.php?msg=Administrador+creado,+puedes+iniciar+sesión");
                 exit();
@@ -64,7 +64,6 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
         }
     }
 
-    // Si llega aquí y no se hizo POST de registro, se mostrará el formulario de alta
 }
 
 ?>

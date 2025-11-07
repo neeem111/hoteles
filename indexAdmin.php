@@ -19,7 +19,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 </head>
 <body>
     <div class="admin-card">
-        <h1>👋 Bienvenido, <?php echo $nombre; ?></h1>
+        <h1>Bienvenido, <?php echo $nombre; ?></h1>
         <p>Has iniciado sesión como <strong>Administrador</strong>.</p>
 
         <div class="admin-buttons">
