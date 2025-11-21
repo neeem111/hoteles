@@ -96,19 +96,20 @@ $conn->close(); // Cerrar la conexión
         }
 
         .container {
-            padding: 20px;
-            max-width: 1300px;
-            margin: 30px auto;
+            padding: 1%;
+            margin: 2% 10%; /* 10% margen izquierdo y derecho */
+            max-width: 80%;
+            box-sizing: border-box;
         }
         
         h2 {
             color: var(--color-dark);
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 4%;
             font-weight: 600;
-            border-bottom: 3px solid var(--color-secondary);
+            border-bottom: 0.3rem solid var(--color-secondary);
             display: inline-block;
-            padding-bottom: 5px;
+            padding-bottom: 0.5%;
             margin-left: 50%;
             transform: translateX(-50%);
         }
@@ -116,13 +117,13 @@ $conn->close(); // Cerrar la conexión
         /* --- Estilos del Filtro de Búsqueda --- */
         .search-filter {
             background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
+            padding: 1.2%;
+            border-radius: 1rem;
+            box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.08);
+            margin-bottom: 2.5%;
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 1%;
             align-items: center;
         }
         .search-filter label {
@@ -149,8 +150,8 @@ $conn->close(); // Cerrar la conexión
         /* --- Estilos de la Cuadrícula de Hoteles --- */
         .hotel-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2%;
         }
         .hotel-card {
             background-color: white;
@@ -167,17 +168,17 @@ $conn->close(); // Cerrar la conexión
         }
         
         .hotel-content {
-            padding: 20px;
+            padding: 1.2%;
             flex-grow: 1; /* Asegura que el contenido ocupe el espacio */
         }
         
         .hotel-name {
             color: var(--color-primary);
             margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-            border-left: 4px solid var(--color-secondary);
-            padding-left: 10px;
+            margin-bottom: 0.6rem;
+            font-size: 1.6rem;
+            border-left: 0.4rem solid var(--color-secondary);
+            padding-left: 0.6rem;
         }
         .hotel-details p {
             margin: 8px 0;
@@ -192,22 +193,22 @@ $conn->close(); // Cerrar la conexión
         .price-tag {
             background-color: var(--color-secondary);
             color: var(--color-dark);
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 0.4% 0.8%;
+            border-radius: 0.5rem;
             font-weight: 700;
-            font-size: 1.2em;
+            font-size: 1rem;
             display: inline-block;
-            margin-top: 15px;
+            margin-top: 1%;
         }
 
         .btn-reserve {
             display: block; 
-            margin-top: 20px; 
+            margin-top: 1.2%; 
             text-align: center; 
             background-color: #007bff; 
             color: white; 
-            padding: 12px; 
-            border-radius: 8px; 
+            padding: 0.8% 1%; 
+            border-radius: 0.6rem; 
             text-decoration: none;
             font-weight: 600;
             transition: background-color 0.2s;
@@ -218,12 +219,12 @@ $conn->close(); // Cerrar la conexión
 
         .no-results {
             text-align: center;
-            padding: 60px;
+            padding: 6%;
             background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            margin: 50px auto;
-            max-width: 600px;
+            border-radius: 1rem;
+            box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.05);
+            margin: 5% auto;
+            max-width: 90%;
         }
 
         /* --- Tipos de Habitaciones --- */
@@ -270,6 +271,10 @@ $conn->close(); // Cerrar la conexión
             .hotel-grid {
                  grid-template-columns: 1fr;
             }
+            .container {
+                margin: 2% 3%; /* reducir margen lateral en móviles */
+                max-width: 94%;
+            }
         }
     </style>
 </head>
@@ -278,6 +283,9 @@ $conn->close(); // Cerrar la conexión
     <header class="header">
         <h1><?php echo $nombreCadena; ?> 🇪🇸</h1>
         <p>Tu portal de reservas de alta calidad en las mejores ciudades de España.</p>
+        <div style="position:absolute; top:66px; right:20px">
+            <a href="cart/view_cart.php" style="color:white; text-decoration:none; font-weight:700">🛒 Ver Carrito</a>
+        </div>
     </header>
 
     <div class="container">
@@ -327,9 +335,18 @@ $conn->close(); // Cerrar la conexión
                                 Desde $<?php echo $hotel['PrecioSimulado']; ?>/noche
                             </div>
                             
-                            <a href="reserva.php?hotel_id=<?php echo $hotel['Id']; ?>" class="btn-reserve">
-                                Reservar Ahora
-                            </a>
+                            <div style="display:flex; gap:10px; margin-top:18px">
+                                <a href="reserva.php?hotel_id=<?php echo $hotel['Id']; ?>" class="btn-reserve" style="flex:1">
+                                    Reservar Ahora
+                                </a>
+
+                                <form method="POST" action="cart/add_to_cart.php" style="display:inline-block">
+                                    <input type="hidden" name="hotel_id" value="<?php echo intval($hotel['Id']); ?>">
+                                    <input type="hidden" name="precio" value="<?php echo $hotel['PrecioSimulado']; ?>">
+                                    <input type="hidden" name="cantidad" value="1">
+                                    <button type="submit" class="btn-reserve" style="background:#ffc107; color:#343a40">Añadir al carrito</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
