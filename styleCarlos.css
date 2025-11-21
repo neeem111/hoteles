@@ -165,3 +165,77 @@ body {
 .btn-logout:hover {
     text-decoration: underline;
 }
+
+.role-toggle {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.role-pill {
+    flex: 1;
+    border: 1px solid #bbb;
+    border-radius: 999px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.role-pill input[type="radio"] {
+    display: none;
+}
+
+.role-pill input[type="radio"]:checked + span {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+    display: inline-block;
+    width: 100%;
+    border-radius: 999px;
+    padding: 2px 0;
+}
+
+/* --- TOGGLE BONITO DE ROLES --- */
+
+.toggle-wrapper {
+    display: flex;
+    justify-content: space-between;
+    background: #f0f0f0;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-top: 8px;
+}
+
+.toggle-option {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+
+.toggle-option input {
+    display: none;
+}
+
+.toggle-option input:checked + span {
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px 0;
+    display: block;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+}

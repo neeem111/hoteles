@@ -84,6 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="back-store">
             <a href="login.php">← Ya tengo cuenta</a><br>
+            <a href="registerAdmin.php" class="btn-primary">Alta de Usuarios</a>
             <a href="index.php">← Volver a la tienda</a>
         </div>
     </div>

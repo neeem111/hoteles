@@ -24,6 +24,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 
         <div class="admin-buttons">
             <a href="index.php" class="btn-primary">Ver Tienda</a>
+            <a href="registerAdmin.php" class="btn-primary">Alta de Usuarios</a>
             <a href="logout.php" class="btn-logout">Cerrar sesión</a>
         </div>
     </div>

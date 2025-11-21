@@ -1,32 +1,30 @@
 <?php
+session_start(); // NECESARIO PARA LEER LA SESIÓN
+
 // Define la información de la cadena hotelera
 $nombreCadena = "Hoteles Nueva España S.L.";
 $ciudadesDisponibles = ['Valencia', 'Santander', 'Toledo'];
 $tiposHabitacion = [
     'Individual',
     'Doble Estándar',
-    'Doble para Dos', // Añadido el tipo "solo para dos"
+    'Doble para Dos', 
     'Suite de Lujo'
 ];
 
-// Asegúrate de que este archivo exista y tenga tu código de conexión
+// Conexión a Base de Datos
 include('conexion.php'); 
 
-// Parámetros de filtrado
 $filtroCiudad = isset($_GET['ciudad']) ? $_GET['ciudad'] : '';
 
-// Verificar que la conexión sea exitosa antes de continuar
 if ($conn->connect_error) {
     die("Error de conexión, revisa conexion.php");
 }
 
-// 1. Consulta base para obtener todos los hoteles
 $sql = "SELECT Id, Name, City, Address FROM Hotels";
 $hoteles = [];
 
-// 2. Añadir condición WHERE si hay un filtro de ciudad válido
+// Consulta con filtro
 if (!empty($filtroCiudad) && in_array($filtroCiudad, $ciudadesDisponibles)) {
-    // Usar consultas preparadas para mayor seguridad
     $sql .= " WHERE City = ?";
     
     if ($stmt = $conn->prepare($sql)) {
@@ -34,27 +32,22 @@ if (!empty($filtroCiudad) && in_array($filtroCiudad, $ciudadesDisponibles)) {
         $stmt->execute();
         $resultado = $stmt->get_result();
     } else {
-        // Manejar error de preparación de la consulta
-        $resultado = false; 
+        $resultado = false;
     }
 } else {
-    // Consulta sin filtro
     $resultado = $conn->query($sql);
 }
 
+// Cargar resultados
 if ($resultado && $resultado->num_rows > 0) {
-    // Si hay resultados, almacenarlos en un array
     while($row = $resultado->fetch_assoc()) {
-        // Simulamos un precio aleatorio para el diseño, en un entorno real vendría de la BD
-        $row['PrecioSimulado'] = rand(50, 200); 
+        $row['PrecioSimulado'] = rand(50, 200);
         $hoteles[] = $row;
     }
 }
-// Importante: si se usó $stmt, cerrar el statement antes de cerrar la conexión
-if (isset($stmt)) {
-    $stmt->close();
-}
-$conn->close(); // Cerrar la conexión
+
+if (isset($stmt)) $stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -63,10 +56,11 @@ $conn->close(); // Cerrar la conexión
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌟 Hoteles Nueva España S.L. - Portal de Reservas</title>
+
     <style>
         :root {
-            --color-primary: #dc3545; /* Rojo de la bandera española (o similar) */
-            --color-secondary: #ffc107; /* Amarillo/Dorado */
+            --color-primary: #dc3545;
+            --color-secondary: #ffc107;
             --color-dark: #343a40;
             --color-light: #f8f9fa;
         }
@@ -89,11 +83,6 @@ $conn->close(); // Cerrar la conexión
             font-size: 2.5em;
             margin-bottom: 5px;
         }
-        .header p {
-            margin-top: 0;
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
 
         .container {
             padding: 20px;
@@ -113,7 +102,6 @@ $conn->close(); // Cerrar la conexión
             transform: translateX(-50%);
         }
 
-        /* --- Estilos del Filtro de Búsqueda --- */
         .search-filter {
             background-color: white;
             padding: 20px;
@@ -125,52 +113,28 @@ $conn->close(); // Cerrar la conexión
             gap: 20px;
             align-items: center;
         }
-        .search-filter label {
-            font-weight: 600;
-            color: var(--color-dark);
-        }
-        .search-filter select, .search-filter button {
-            padding: 10px 15px;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-            font-size: 1em;
-        }
-        .search-filter button {
-            background-color: #28a745; /* Verde para Buscar */
-            color: white;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.2s;
-        }
-        .search-filter button:hover {
-            background-color: #218838;
-        }
-        
-        /* --- Estilos de la Cuadrícula de Hoteles --- */
+
         .hotel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px;
         }
+
         .hotel-card {
             background-color: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: transform 0.4s ease;
             display: flex;
             flex-direction: column;
         }
         .hotel-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
         }
-        
-        .hotel-content {
-            padding: 20px;
-            flex-grow: 1; /* Asegura que el contenido ocupe el espacio */
-        }
-        
+
+        .hotel-content { padding: 20px; }
+
         .hotel-name {
             color: var(--color-primary);
             margin-top: 0;
@@ -178,15 +142,6 @@ $conn->close(); // Cerrar la conexión
             font-size: 1.8em;
             border-left: 4px solid var(--color-secondary);
             padding-left: 10px;
-        }
-        .hotel-details p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 1em;
-            line-height: 1.4;
-        }
-        .hotel-details strong {
-            color: var(--color-dark);
         }
 
         .price-tag {
@@ -201,7 +156,7 @@ $conn->close(); // Cerrar la conexión
         }
 
         .btn-reserve {
-            display: block; 
+            display: block;
             margin-top: 20px; 
             text-align: center; 
             background-color: #007bff; 
@@ -210,141 +165,141 @@ $conn->close(); // Cerrar la conexión
             border-radius: 8px; 
             text-decoration: none;
             font-weight: 600;
-            transition: background-color 0.2s;
-        }
-        .btn-reserve:hover {
-            background-color: #0056b3;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            margin: 50px auto;
-            max-width: 600px;
-        }
-
-        /* --- Tipos de Habitaciones --- */
-        .room-types {
-            margin-top: 40px;
-            text-align: center;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        }
-        .room-types h3 {
-            color: var(--color-primary);
-            margin-bottom: 15px;
-        }
-        .room-list {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .room-list span {
-            background-color: var(--color-light);
-            color: var(--color-dark);
-            padding: 8px 15px;
-            border: 1px dashed var(--color-primary);
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-
-        /* Responsividad básica */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            .search-filter {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .search-filter select, .search-filter button {
-                width: 100%;
-            }
-            .hotel-grid {
-                 grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <h1><?php echo $nombreCadena; ?> 🇪🇸</h1>
-        <p>Tu portal de reservas de alta calidad en las mejores ciudades de España.</p>
-    </header>
+<!-- 🔵 BLOQUE SUPERIOR DERECHA: LOGIN O SESIÓN -->
+<?php if (isset($_SESSION['user_name'])): ?>
 
-    <div class="container">
+    <div style="
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-size: 0.9em;
+        font-weight: 600;">
         
-        <div class="room-types">
-            <h3>Nuestros Tipos de Habitaciones Disponibles</h3>
-            <div class="room-list">
-                <?php foreach ($tiposHabitacion as $tipo): ?>
-                    <span><?php echo $tipo; ?></span>
-                <?php endforeach; ?>
-            </div>
-        </div>
+        <span>👤 <?= htmlspecialchars($_SESSION['user_name']) ?></span>
 
-        <h2>Encuentra tu Hotel</h2>
+        <a href="logout.php"
+            style="
+                background: #dc3545;
+                color: white;
+                padding: 6px 10px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: bold;">
+            Cerrar sesión
+        </a>
+    </div>
+
+<?php else: ?>
+
+    <div style="
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-size: 0.9em;
+        font-weight: 600;">
         
-        <div class="search-filter">
-            <form method="GET" action="index.php">
-                <label for="ciudad">Filtrar por Ciudad:</label>
-                <select name="ciudad" id="ciudad">
-                    <option value="">Todas las Ciudades</option>
-                    <?php foreach ($ciudadesDisponibles as $ciudad): ?>
-                        <option value="<?php echo htmlspecialchars($ciudad); ?>" 
-                            <?php echo ($filtroCiudad === $ciudad) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($ciudad); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="submit">🔍 Buscar</button>
-            </form>
-            <?php if (!empty($filtroCiudad)): ?>
-                 <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
-            <?php endif; ?>
+        <a href="login.php"
+            style="
+                background: #28a745;
+                color: white;
+                padding: 6px 14px;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: bold;">
+            🔐 Iniciar sesión
+        </a>
+    </div>
+
+<?php endif; ?>
+
+
+<header class="header">
+    <h1><?= $nombreCadena ?> 🇪🇸</h1>
+    <p>Tu portal de reservas de alta calidad en las mejores ciudades de España.</p>
+</header>
+
+<div class="container">
+
+    <div class="room-types">
+        <h3>Nuestros Tipos de Habitaciones Disponibles</h3>
+        <div class="room-list">
+            <?php foreach ($tiposHabitacion as $tipo): ?>
+                <span><?= $tipo ?></span>
+            <?php endforeach; ?>
         </div>
-        
-        <?php if (count($hoteles) > 0): ?>
-            <div class="hotel-grid">
-                <?php foreach ($hoteles as $hotel): ?>
-                    <div class="hotel-card">
-                        <div class="hotel-content">
-                            <h3 class="hotel-name"><?php echo htmlspecialchars($hotel['Name']); ?></h3>
-                            <div class="hotel-details">
-                                <p><strong>📍 Ciudad:</strong> <?php echo htmlspecialchars($hotel['City']); ?></p>
-                                <p><strong>🗺️ Dirección:</strong> <?php echo htmlspecialchars($hotel['Address']); ?></p>
-                            </div>
-                            
-                            <div class="price-tag">
-                                Desde $<?php echo $hotel['PrecioSimulado']; ?>/noche
-                            </div>
-                            
-                            <a href="reserva.php?hotel_id=<?php echo $hotel['Id']; ?>" class="btn-reserve">
-                                Reservar Ahora
-                            </a>
-                        </div>
-                    </div>
+    </div>
+
+    <h2>Encuentra tu Hotel</h2>
+
+    <div class="search-filter">
+        <form method="GET" action="index.php">
+            <label for="ciudad">Filtrar por Ciudad:</label>
+            <select name="ciudad" id="ciudad">
+                <option value="">Todas las Ciudades</option>
+                <?php foreach ($ciudadesDisponibles as $ciudad): ?>
+                    <option value="<?= $ciudad ?>" <?= $filtroCiudad === $ciudad ? 'selected' : '' ?>>
+                        <?= $ciudad ?>
+                    </option>
                 <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="no-results">
-                <?php if (!empty($filtroCiudad)): ?>
-                     <p>⚠️ No se encontraron hoteles en **<?php echo htmlspecialchars($filtroCiudad); ?>** que coincidan con la búsqueda.</p>
-                     <p>Intenta con otra ciudad o <a href="index.php">muestra todos los hoteles</a>.</p>
-                <?php else: ?>
-                     <p>⚠️ No se encontraron hoteles en la base de datos.</p>
-                     <p>Asegúrate de haber insertado datos en la tabla `Hotels`.</p>
-                <?php endif; ?>
-            </div>
+            </select>
+            <button type="submit">🔍 Buscar</button>
+        </form>
+
+        <?php if (!empty($filtroCiudad)): ?>
+            <a href="index.php" style="text-decoration:none;font-weight:600;color:#000;">
+                ❌ Limpiar Filtro
+            </a>
         <?php endif; ?>
     </div>
+
+    <?php if (count($hoteles) > 0): ?>
+        <div class="hotel-grid">
+            <?php foreach ($hoteles as $hotel): ?>
+                <div class="hotel-card">
+                    <div class="hotel-content">
+                        <h3 class="hotel-name"><?= htmlspecialchars($hotel['Name']) ?></h3>
+
+                        <p><strong>📍 Ciudad:</strong> <?= htmlspecialchars($hotel['City']) ?></p>
+                        <p><strong>🗺️ Dirección:</strong> <?= htmlspecialchars($hotel['Address']) ?></p>
+
+                        <div class="price-tag">
+                            Desde $<?= $hotel['PrecioSimulado'] ?>/noche
+                        </div>
+
+                        <a href="reserva.php?hotel_id=<?= $hotel['Id'] ?>" class="btn-reserve">
+                            Reservar Ahora
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+    <?php else: ?>
+        <div class="no-results">
+            <p>⚠️ No se encontraron hoteles con los filtros aplicados.</p>
+        </div>
+    <?php endif; ?>
+
+</div>
+
 </body>
 </html>
