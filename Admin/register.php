@@ -1,12 +1,12 @@
 <?php
 session_start();
-include("conexion.php");
+include("../conexion.php");
 
 const ADMIN_GATE_PASSWORD = '$ilksong22';
 
 if (isset($_GET['logout']) && $_GET['logout'] == '1') {
     unset($_SESSION['admin_gate']);
-    header("Location: registerAdmin.php");
+    header("Location: register.php");
     exit();
 }
 
@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_access'])) {
     $access_try = trim($_POST['admin_access']);
     if ($access_try === ADMIN_GATE_PASSWORD) {
         $_SESSION['admin_gate'] = true;
-        header("Location: registerAdmin.php");
+        header("Location: register.php");
         exit();
     } else {
         $mensaje = "Contraseña de acceso incorrecta.";
@@ -56,7 +56,7 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
 
             if ($stmt->execute()) {
                 unset($_SESSION['admin_gate']);
-                header("Location: login.php?msg=Usuario+registrado+correctamente");
+                header("Location: ../login.php?msg=Usuario+registrado+correctamente");
                 exit();
             } else {
                 $mensaje = "Error al registrar usuario.";
@@ -190,7 +190,7 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
         </form>
 
         <div class="back-store">
-            <a href="index.php">← Volver a la tienda</a>
+            <a href="../Cliente/index.php">← Volver a la tienda</a>
         </div>
     </div>
 
@@ -252,8 +252,8 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
         </form>
 
         <div class="back-store">
-            <a href="registerAdmin.php?logout=1">← Salir del modo de alta</a><br>
-            <a href="login.php">← Volver al login</a>
+            <a href="register.php?logout=1">← Salir del modo de alta</a><br>
+            <a href="../login.php">← Volver al login</a>
         </div>
     </div>
 

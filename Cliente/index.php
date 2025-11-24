@@ -12,7 +12,7 @@ $tiposHabitacion = [
 ];
 
 // Conexión a Base de Datos
-include('conexion.php'); 
+include('../conexion.php'); 
 
 $filtroCiudad = isset($_GET['ciudad']) ? $_GET['ciudad'] : '';
 
@@ -189,7 +189,7 @@ $conn->close();
         
         <span>👤 <?= htmlspecialchars($_SESSION['user_name']) ?></span>
 
-        <a href="logout.php"
+        <a href="../logout.php"
             style="
                 background: #dc3545;
                 color: white;
