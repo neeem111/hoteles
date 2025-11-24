@@ -1,21 +1,32 @@
 <?php
+session_start(); // Iniciar sesión al comienzo del archivo
 // Define la información de la cadena hotelera
 $nombreCadena = "Hoteles Nueva España S.L.";
 $ciudadesDisponibles = ['Valencia', 'Santander', 'Toledo'];
-$tiposHabitacion = [
-    'Individual',
-    'Doble Estándar',
-    'Doble para Dos', // Añadido el tipo "solo para dos"
-    'Suite de Lujo'
-];
 
-// Asegúrate de que este archivo exista y tenga tu código de conexión
+// --- NUEVA LÓGICA DE PRECIOS POR CIUDAD ---
+$tarifasBase = [
+    'Toledo' => 20,
+    'Valencia' => 30,
+    'Santander' => 25
+];
+$incrementoPorCiudad = [
+    'Toledo' => 15,
+    'Valencia' => 12,
+    'Santander' => 10
+];
+// ------------------------------------------
+
+// Comprobar estado de la sesión
+$is_logged_in = isset($_SESSION['user_id']);
+$user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
+
 include('conexion.php'); 
 
 // Parámetros de filtrado
 $filtroCiudad = isset($_GET['ciudad']) ? $_GET['ciudad'] : '';
 
-// Verificar que la conexión sea exitosa antes de continuar
+// Verificar que la conexión sea exitosa
 if ($conn->connect_error) {
     die("Error de conexión, revisa conexion.php");
 }
@@ -23,6 +34,7 @@ if ($conn->connect_error) {
 // 1. Consulta base para obtener todos los hoteles
 $sql = "SELECT Id, Name, City, Address FROM Hotels";
 $hoteles = [];
+$stmt = null;
 
 // 2. Añadir condición WHERE si hay un filtro de ciudad válido
 if (!empty($filtroCiudad) && in_array($filtroCiudad, $ciudadesDisponibles)) {
@@ -34,7 +46,6 @@ if (!empty($filtroCiudad) && in_array($filtroCiudad, $ciudadesDisponibles)) {
         $stmt->execute();
         $resultado = $stmt->get_result();
     } else {
-        // Manejar error de preparación de la consulta
         $resultado = false; 
     }
 } else {
@@ -45,16 +56,20 @@ if (!empty($filtroCiudad) && in_array($filtroCiudad, $ciudadesDisponibles)) {
 if ($resultado && $resultado->num_rows > 0) {
     // Si hay resultados, almacenarlos en un array
     while($row = $resultado->fetch_assoc()) {
-        // Simulamos un precio aleatorio para el diseño, en un entorno real vendría de la BD
-        $row['PrecioSimulado'] = rand(50, 200); 
+        
+        // --- APLICACIÓN DE LA NUEVA LÓGICA ---
+        $ciudadHotel = $row['City'];
+        // Asignamos el precio base como el precio 'Desde'
+        $row['PrecioDesde'] = $tarifasBase[$ciudadHotel] ?? 50; // 50 como fallback seguro
+        // -------------------------------------
+        
         $hoteles[] = $row;
     }
 }
-// Importante: si se usó $stmt, cerrar el statement antes de cerrar la conexión
-if (isset($stmt)) {
+
+if ($stmt) {
     $stmt->close();
 }
-$conn->close(); // Cerrar la conexión
 ?>
 
 <!DOCTYPE html>
@@ -65,8 +80,8 @@ $conn->close(); // Cerrar la conexión
     <title>🌟 Hoteles Nueva España S.L. - Portal de Reservas</title>
     <style>
         :root {
-            --color-primary: #dc3545; /* Rojo de la bandera española (o similar) */
-            --color-secondary: #ffc107; /* Amarillo/Dorado */
+            --color-primary: #a02040; /* Borgoña/Vino, elegante */
+            --color-secondary: #ffc107; /* Dorado/Amarillo */
             --color-dark: #343a40;
             --color-light: #f8f9fa;
         }
@@ -75,37 +90,116 @@ $conn->close(); // Cerrar la conexión
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--color-light);
             margin: 0;
-            padding: 0;
+            padding-top: 80px; /* Espacio para el nav fijo */
         }
         
-        .header {
+        /* --- Barra de Navegación (Nueva) --- */
+        .navbar {
+            background-color: #ffffff; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box; 
+        }
+        .navbar-brand {
+            color: var(--color-primary);
+            font-size: 1.8em;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 0.95em;
+        }
+        .btn-login {
             background-color: var(--color-primary);
             color: white;
-            padding: 25px 20px;
+            border: 1px solid var(--color-primary);
+        }
+        .btn-login:hover {
+            background-color: #801933;
+        }
+        .btn-signup {
+            background-color: white;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+        .btn-signup:hover {
+            background-color: var(--color-primary);
+            color: white;
+        }
+        .user-greeting {
+            color: var(--color-dark);
+            font-weight: 500;
+            font-size: 1em;
+        }
+        .cart-icon a {
+            color: var(--color-dark);
+            font-size: 1.5em;
+            text-decoration: none;
+        }
+        .cart-icon a:hover {
+            color: var(--color-primary);
+        }
+        .admin-link {
+            background: #28a745;
+            color: white;
+            border: 1px solid #28a745;
+        }
+        .admin-link:hover {
+            background: #1e7e34;
+        }
+
+        /* --- Estilos del Encabezado Principal (Hero) --- */
+        .header {
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('hotel_hero_background.jpg'); /* */
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 20px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
         }
         .header h1 {
-            font-size: 2.5em;
+            font-size: 3.5em;
             margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         .header p {
             margin-top: 0;
-            font-size: 1.1em;
+            font-size: 1.3em;
             opacity: 0.9;
         }
 
         .container {
             padding: 20px;
             max-width: 1300px;
-            margin: 30px auto;
+            margin: 0 auto;
         }
         
         h2 {
-            color: var(--color-dark);
+            color: var(--color-primary);
             text-align: center;
             margin-bottom: 40px;
-            font-weight: 600;
+            font-weight: 700;
+            font-size: 2.2em;
             border-bottom: 3px solid var(--color-secondary);
             display: inline-block;
             padding-bottom: 5px;
@@ -116,10 +210,10 @@ $conn->close(); // Cerrar la conexión
         /* --- Estilos del Filtro de Búsqueda --- */
         .search-filter {
             background-color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 50px;
             display: flex;
             justify-content: center;
             gap: 20px;
@@ -130,13 +224,13 @@ $conn->close(); // Cerrar la conexión
             color: var(--color-dark);
         }
         .search-filter select, .search-filter button {
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 5px;
             border: 1px solid #ced4da;
             font-size: 1em;
         }
         .search-filter button {
-            background-color: #28a745; /* Verde para Buscar */
+            background-color: #28a745; 
             color: white;
             cursor: pointer;
             border: none;
@@ -149,30 +243,48 @@ $conn->close(); // Cerrar la conexión
         /* --- Estilos de la Cuadrícula de Hoteles --- */
         .hotel-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
         }
         .hotel-card {
             background-color: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             transition: transform 0.4s ease, box-shadow 0.4s ease;
             display: flex;
             flex-direction: column;
         }
         .hotel-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
         }
         
+        .hotel-image {
+            height: 200px; 
+            background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 1.4em;
+            font-weight: 600;
+            overflow: hidden; 
+        }
+        .hotel-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; 
+        }
+
+
         .hotel-content {
             padding: 20px;
-            flex-grow: 1; /* Asegura que el contenido ocupe el espacio */
+            flex-grow: 1; 
         }
         
         .hotel-name {
-            color: var(--color-primary);
+            color: var(--color-dark);
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 1.8em;
@@ -185,17 +297,14 @@ $conn->close(); // Cerrar la conexión
             font-size: 1em;
             line-height: 1.4;
         }
-        .hotel-details strong {
-            color: var(--color-dark);
-        }
 
         .price-tag {
-            background-color: var(--color-secondary);
-            color: var(--color-dark);
-            padding: 5px 10px;
+            background-color: var(--color-primary);
+            color: white;
+            padding: 8px 15px;
             border-radius: 5px;
             font-weight: 700;
-            font-size: 1.2em;
+            font-size: 1.3em;
             display: inline-block;
             margin-top: 15px;
         }
@@ -204,16 +313,16 @@ $conn->close(); // Cerrar la conexión
             display: block; 
             margin-top: 20px; 
             text-align: center; 
-            background-color: #007bff; 
-            color: white; 
+            background-color: var(--color-secondary); 
+            color: var(--color-dark); 
             padding: 12px; 
             border-radius: 8px; 
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             transition: background-color 0.2s;
         }
         .btn-reserve:hover {
-            background-color: #0056b3;
+            background-color: #e0ac00;
         }
 
         .no-results {
@@ -226,76 +335,61 @@ $conn->close(); // Cerrar la conexión
             max-width: 600px;
         }
 
-        /* --- Tipos de Habitaciones --- */
-        .room-types {
-            margin-top: 40px;
+        /* --- Footer (Nuevo) --- */
+        .footer {
+            background-color: var(--color-dark);
+            color: #ccc;
+            padding: 30px 20px;
+            margin-top: 50px;
             text-align: center;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-        }
-        .room-types h3 {
-            color: var(--color-primary);
-            margin-bottom: 15px;
-        }
-        .room-list {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .room-list span {
-            background-color: var(--color-light);
-            color: var(--color-dark);
-            padding: 8px 15px;
-            border: 1px dashed var(--color-primary);
-            border-radius: 20px;
             font-size: 0.9em;
-            font-weight: 500;
         }
-
-        /* Responsividad básica */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            .search-filter {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .search-filter select, .search-filter button {
-                width: 100%;
-            }
-            .hotel-grid {
-                 grid-template-columns: 1fr;
-            }
+        .footer a {
+            color: var(--color-secondary);
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
+    <nav class="navbar">
+        <a href="index.php" class="navbar-brand">Hoteles NESL</a>
+        
+        <div class="navbar-actions">
+            
+            <div class="cart-icon">
+                <a href="cart.php" title="Ver Carrito">🛒 Carrito</a>
+            </div>
+
+            <?php if ($is_logged_in): ?>
+                <span class="user-greeting">Bienvenido, <strong><?php echo $user_name; ?></strong></span>
+                
+                <?php if (strcasecmp($_SESSION['user_role'], 'Administrador') === 0): ?>
+                    <a href="indexAdmin.php" class="nav-btn admin-link">Panel Admin</a>
+                <?php endif; ?>
+                
+                <a href="logout.php" class="nav-btn btn-signup">Cerrar Sesión</a>
+            <?php else: ?>
+                <a href="login.php" class="nav-btn btn-login">Iniciar Sesión</a>
+                <a href="register.php" class="nav-btn btn-signup">Regístrate</a>
+            <?php endif; ?>
+        </div>
+    </nav>
+    
     <header class="header">
-        <h1><?php echo $nombreCadena; ?> 🇪🇸</h1>
-        <p>Tu portal de reservas de alta calidad en las mejores ciudades de España.</p>
+        <h1><?php echo $nombreCadena; ?></h1>
+        <p>Vive el lujo en los mejores destinos de España. ¡Tu escapada perfecta comienza aquí! 
+</p>
     </header>
 
     <div class="container">
         
-        <div class="room-types">
-            <h3>Nuestros Tipos de Habitaciones Disponibles</h3>
-            <div class="room-list">
-                <?php foreach ($tiposHabitacion as $tipo): ?>
-                    <span><?php echo $tipo; ?></span>
-                <?php endforeach; ?>
-            </div>
-        </div>
-
-        <h2>Encuentra tu Hotel</h2>
-        
         <div class="search-filter">
-            <form method="GET" action="index.php">
-                <label for="ciudad">Filtrar por Ciudad:</label>
+            <form method="GET" action="index.php" style="display:flex; gap:20px; align-items:center;">
+                <label for="ciudad">Busca tu próximo destino:</label>
                 <select name="ciudad" id="ciudad">
                     <option value="">Todas las Ciudades</option>
                     <?php foreach ($ciudadesDisponibles as $ciudad): ?>
@@ -305,17 +399,22 @@ $conn->close(); // Cerrar la conexión
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <button type="submit">🔍 Buscar</button>
+                <button type="submit">🔍 Buscar Hotel</button>
             </form>
             <?php if (!empty($filtroCiudad)): ?>
                  <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
             <?php endif; ?>
         </div>
         
+        <h2>Ofertas Destacadas</h2>
+        
         <?php if (count($hoteles) > 0): ?>
             <div class="hotel-grid">
                 <?php foreach ($hoteles as $hotel): ?>
                     <div class="hotel-card">
+                         <div class="hotel-image">
+                             <img src="images/<?php echo strtolower(str_replace(' ', '_', $hotel['City'])); ?>_hotel.jpg?v=1.0" alt="Foto del Hotel en <?php echo htmlspecialchars($hotel['City']); ?>">
+                         </div>
                         <div class="hotel-content">
                             <h3 class="hotel-name"><?php echo htmlspecialchars($hotel['Name']); ?></h3>
                             <div class="hotel-details">
@@ -324,11 +423,11 @@ $conn->close(); // Cerrar la conexión
                             </div>
                             
                             <div class="price-tag">
-                                Desde $<?php echo $hotel['PrecioSimulado']; ?>/noche
+                                Desde <strong>$<?php echo $hotel['PrecioDesde']; ?></strong>/noche 
                             </div>
                             
-                            <a href="reserva.php?hotel_id=<?php echo $hotel['Id']; ?>" class="btn-reserve">
-                                Reservar Ahora
+                            <a href="hotel.php?hotel_id=<?php echo $hotel['Id']; ?>" class="btn-reserve">
+                                Ver Habitaciones
                             </a>
                         </div>
                     </div>
@@ -336,15 +435,14 @@ $conn->close(); // Cerrar la conexión
             </div>
         <?php else: ?>
             <div class="no-results">
-                <?php if (!empty($filtroCiudad)): ?>
-                     <p>⚠️ No se encontraron hoteles en **<?php echo htmlspecialchars($filtroCiudad); ?>** que coincidan con la búsqueda.</p>
-                     <p>Intenta con otra ciudad o <a href="index.php">muestra todos los hoteles</a>.</p>
-                <?php else: ?>
-                     <p>⚠️ No se encontraron hoteles en la base de datos.</p>
-                     <p>Asegúrate de haber insertado datos en la tabla `Hotels`.</p>
-                <?php endif; ?>
+                <p>⚠️ No se encontraron hoteles en la base de datos o que coincidan con la búsqueda.</p>
             </div>
         <?php endif; ?>
     </div>
+    
+    <footer class="footer">
+        <p>&copy; <?php echo date("Y"); ?> <?php echo $nombreCadena; ?>. | <a href="aviso_legal.php">Aviso Legal</a> | <a href="contacto.php">Contáctanos</a></p>
+    </footer>
+
 </body>
 </html>

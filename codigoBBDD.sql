@@ -89,6 +89,15 @@ CREATE TABLE InvoiceItems (
     -- Definición de Clave Foránea
     FOREIGN KEY (Id_Invoice) REFERENCES Invoices(Id)
 );
+
+CREATE TABLE IF NOT EXISTS login_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ip_address VARCHAR(45),
+    success BOOLEAN NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(Id) ON DELETE CASCADE
+);
 -----------------------------------------------------------------------------------------DATOS
 
 -- 1. Insertar Hoteles (3 Filas)
