@@ -196,7 +196,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
                     <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
                     <p style="color: #999;">Precio por noche</p>
                     <a href="reservar.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id']; ?>" class="btn-select">
-                        Seleccionar
+                        Reservar
                     </a>
                 </div>
             </li>
