@@ -24,9 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Redirección según rol
             if (strcasecmp($_SESSION['user_role'], 'Administrador') === 0) {
-                header("Location: indexAdmin.php");
+                header("Location: Admin/index.php");
             } else {
-                header("Location: index.php");
+                header("Location: Cliente/index.php");
             }
             exit();
 

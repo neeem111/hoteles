@@ -3,7 +3,7 @@ session_start();
 
 // Solo permite acceso a administradores
 if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administrador') !== 0) {
-    header("Location: login.php?error=Acceso+solo+para+administradores");
+    header("Location: ../login.php?error=Acceso+solo+para+administradores");
     exit();
 }
 
@@ -15,7 +15,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 <head>
     <meta charset="UTF-8">
     <title>Panel de Administración</title>
-    <link rel="stylesheet" href="styleCarlos.css">
+    <link rel="stylesheet" href="../styleCarlos.css">
 </head>
 <body>
     <div class="admin-card">
@@ -23,8 +23,9 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
         <p>Has iniciado sesión como <strong>Administrador</strong>.</p>
 
         <div class="admin-buttons">
-            <a href="index.php" class="btn-primary">Ver Tienda</a>
-            <a href="logout.php" class="btn-logout">Cerrar sesión</a>
+            <a href="../Cliente/index.php" class="btn-primary">Ver Tienda</a>
+            <a href="register.php" class="btn-primary">Alta de Usuarios</a>
+            <a href="../logout.php" class="btn-logout">Cerrar sesión</a>
         </div>
     </div>
 </body>

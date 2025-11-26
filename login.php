@@ -46,8 +46,8 @@ if (isset($_GET['msg'])) {
         </form>
 
         <div class="back-store">
-            <a href="register.php">¿No tienes cuenta? Regístrate aquí</a><br>
-            <a href="index.php">← Volver a la tienda</a>
+            <a href="Cliente/register.php">¿No tienes cuenta? Regístrate aquí</a><br>
+            <a href="Cliente/index.php">← Volver a la tienda</a>
         </div>
 
     </div>
