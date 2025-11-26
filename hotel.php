@@ -34,11 +34,19 @@ function obtenerDetallesHotel($conn, $id) {
     return $resultado->fetch_assoc();
 }
 
-// Función para obtener los tipos de habitación y sus costes (usando la BBDD RoomType)
-function obtenerTiposHabitacion($conn) {
-    // Ordenamos por CostPerNight para aplicar el incremento de forma consistente
-    $sql = "SELECT Id, Name, Guests FROM RoomType ORDER BY CostPerNight ASC";
-    $resultado = $conn->query($sql);
+// Función para obtener los tipos de habitación disponibles en un hotel concreto
+function obtenerTiposHabitacion($conn, $hotelId) {
+    $sql = "SELECT DISTINCT rt.Id, rt.Name, rt.Guests, rt.CostPerNight
+            FROM RoomType rt
+            INNER JOIN Rooms r ON r.Id_RoomType = rt.Id
+            WHERE r.Id_Hotel = ?
+            ORDER BY rt.CostPerNight ASC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $hotelId);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
     return $resultado->fetch_all(MYSQLI_ASSOC);
 }
 
@@ -51,22 +59,15 @@ if (!$hotel) {
     exit();
 }
 
-$tiposHabitacion = obtenerTiposHabitacion($conn);
+$tiposHabitacion = obtenerTiposHabitacion($conn, $hotel_id);
 
 $ciudad = $hotel['City'];
-$precioBase = $tarifasBase[$ciudad] ?? 50;
-$incremento = $incrementoPorCiudad[$ciudad] ?? 15;
-
 $habitacionesDisponibles = [];
-$contador = 0;
 
 // Aplicar la lógica de precios
 foreach ($tiposHabitacion as $tipo) {
-    // Calculamos el precio: Base + (Contador * Incremento)
-    $precioCalculado = $precioBase + ($contador * $incremento);
-    $tipo['PrecioNoche'] = number_format($precioCalculado, 2, '.', '');
+    $tipo['PrecioNoche'] = number_format($tipo['CostPerNight'], 2, '.', '');
     $habitacionesDisponibles[] = $tipo;
-    $contador++; 
 }
 
 // Comprobar estado de la sesión para el navbar
