@@ -3,7 +3,7 @@ session_start();
 
 // Solo permite acceso a administradores
 if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administrador') !== 0) {
-    header("Location: ../login.php?error=Acceso+solo+para+administradores");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -15,18 +15,120 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 <head>
     <meta charset="UTF-8">
     <title>Panel de Administración</title>
-    <link rel="stylesheet" href="../styleCarlos.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background-color: #343a40;
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #343a40;
+        }
+
+        .card a {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 18px;
+            margin-top: 10px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .card a:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
 </head>
 <body>
-    <div class="admin-card">
-        <h1>Bienvenido, <?php echo $nombre; ?></h1>
-        <p>Has iniciado sesión como <strong>Administrador</strong>.</p>
 
-        <div class="admin-buttons">
-            <a href="../Cliente/index.php" class="btn-primary">Ver Tienda</a>
-            <a href="register.php" class="btn-primary">Alta de Usuarios</a>
-            <a href="../logout.php" class="btn-logout">Cerrar sesión</a>
+<div class="header">
+    <h1>Bienvenido, <?= $nombre ?></h1>
+    <a href="../logout.php" class="logout-btn">Cerrar Sesión</a>
+</div>
+
+<div class="container">
+    <h2 style="text-align:center; margin-bottom: 30px;">Panel de Administración</h2>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Administrar Usuarios</h3>
+            <p>Registrar nuevos usuarios para la plataforma.</p>
+            <a href="register.php">Ir a Registro</a>
         </div>
+
+        <div class="card">
+            <h3>Ver Tienda</h3>
+            <p>Explora la vista del cliente como un usuario regular.</p>
+            <a href="../Cliente/index.php">Ir a la Tienda</a>
+        </div>
+
+        <div class="card">
+            <h3>Registros de Sesión</h3>
+            <p>Consulta los inicios y cierres de sesión de todos los usuarios.</p>
+            <a href="logs.php">Ver Logs</a>
+        </div>
+
     </div>
+</div>
+
+<!-- Mantener sesión activa -->
+<script src="../keepalive.js"></script>
+
 </body>
 </html>
