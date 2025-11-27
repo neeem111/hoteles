@@ -1,4 +1,6 @@
 <?php
+// config/conexion.php
+
 $servidor = "localhost";
 $usuario = "root";
 $clave = "";
@@ -9,5 +11,5 @@ $conn = new mysqli($servidor, $usuario, $clave, $basededatos);
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
-//Probando usuario
-?>
+
+$conn->set_charset('utf8mb4');

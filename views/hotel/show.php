@@ -1,87 +1,13 @@
 <?php
-session_start();
-include('conexion.php'); 
-
-// 1. Obtener y validar el ID del hotel
-$hotel_id = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
-
-if ($hotel_id <= 0) {
-    header("Location: index.php?error=Hotel+no+especificado");
-    exit();
-}
-
-// Lógica de precios definida
-$tarifasBase = [
-    'Toledo' => 20,
-    'Valencia' => 30,
-    'Santander' => 25
-];
-$incrementoPorCiudad = [
-    'Toledo' => 15,
-    'Valencia' => 12,
-    'Santander' => 10
-];
-
-// --- FUNCIONES PARA OBTENER DATOS DE LA BBDD ---
-
-// Función para obtener los detalles del hotel
-function obtenerDetallesHotel($conn, $id) {
-    $sql = "SELECT Id, Name, City, Address FROM Hotels WHERE Id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    return $resultado->fetch_assoc();
-}
-
-// Función para obtener los tipos de habitación disponibles en un hotel concreto
-function obtenerTiposHabitacion($conn, $hotelId) {
-    $sql = "SELECT DISTINCT rt.Id, rt.Name, rt.Guests, rt.CostPerNight
-            FROM RoomType rt
-            INNER JOIN Rooms r ON r.Id_RoomType = rt.Id
-            WHERE r.Id_Hotel = ?
-            ORDER BY rt.CostPerNight ASC";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $hotelId);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-
-    return $resultado->fetch_all(MYSQLI_ASSOC);
-}
-
-// --- EJECUCIÓN ---
-
-$hotel = obtenerDetallesHotel($conn, $hotel_id);
-
-if (!$hotel) {
-    header("Location: index.php?error=Hotel+no+encontrado");
-    exit();
-}
-
-$tiposHabitacion = obtenerTiposHabitacion($conn, $hotel_id);
-
-$ciudad = $hotel['City'];
-$habitacionesDisponibles = [];
-
-// Aplicar la lógica de precios
-foreach ($tiposHabitacion as $tipo) {
-    $tipo['PrecioNoche'] = number_format($tipo['CostPerNight'], 2, '.', '');
-    $habitacionesDisponibles[] = $tipo;
-}
-
-// Comprobar estado de la sesión para el navbar
-$is_logged_in = isset($_SESSION['user_id']);
-$user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
-$nombreCadena = "Hoteles Nueva España S.L.";
+// views/hotel/show.php
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reserva en <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="styleCarlos.css"> <style>
+    <title>Reserva en <?php echo htmlspecialchars($hotelView['Name']); ?></title>
+    <link rel="stylesheet" href="styleCarlos.css">
+    <style>
         :root {
             --color-primary: #a02040;
             --color-secondary: #ffc107;
@@ -149,7 +75,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
         .room-price strong {
             display: block;
             font-size: 1.8em;
-            color: #28a745; /* Verde para el precio */
+            color: #28a745;
             margin-bottom: 10px;
         }
         .btn-select {
@@ -164,28 +90,52 @@ $nombreCadena = "Hoteles Nueva España S.L.";
         .btn-select:hover {
             background-color: #801933;
         }
+        .nav-bar-top {
+            background:#a02040; 
+            color:white; 
+            padding:15px; 
+            text-align:center; 
+            position:fixed; 
+            top:0; 
+            width:100%; 
+            z-index:1000;
+            box-sizing: border-box;
+        }
+        .nav-bar-top a {
+            color:white; 
+            text-decoration:none; 
+            font-size:1.5em; 
+            font-weight:bold;
+        }
+        .nav-bar-top span {
+            float:right; 
+            margin-right: 20px; 
+            font-size:1.1em;
+        }
     </style>
 </head>
 <body>
 
-    <nav style="background:#a02040; color:white; padding:15px; text-align:center; position:fixed; top:0; width:100%; z-index:1000;">
-        <a href="index.php" style="color:white; text-decoration:none; font-size:1.5em; font-weight:bold;">← Volver a Hoteles</a>
-        <span style="float:right; margin-right: 20px; font-size:1.1em;">
-            <?php echo $is_logged_in ? "Bienvenido, " . $user_name : '<a href="index.php?page=client_login" style="color:white;">Iniciar Sesión</a>'; ?>
+    <nav class="nav-bar-top">
+        <a href="index.php">← Volver a Hoteles</a>
+        <span>
+            <?php echo $isLoggedInView ? "Bienvenido, " . $userNameView : '<a href="index.php?page=client_login" style="color:white;">Iniciar Sesión</a>'; ?>
         </span>
     </nav>
 
-
     <div class="container">
         <div class="hotel-header">
-            <h1><?php echo htmlspecialchars($hotel['Name']); ?></h1>
-            <p class="hotel-info">📍 <strong><?php echo htmlspecialchars($ciudad); ?></strong> | Dirección: <?php echo htmlspecialchars($hotel['Address']); ?></p>
+            <h1><?php echo htmlspecialchars($hotelView['Name']); ?></h1>
+            <p class="hotel-info">
+                📍 <strong><?php echo htmlspecialchars($ciudadView); ?></strong> | 
+                Dirección: <?php echo htmlspecialchars($hotelView['Address']); ?>
+            </p>
         </div>
 
         <h2>Tipos de Habitación Disponibles</h2>
 
         <ul class="room-listing">
-            <?php foreach ($habitacionesDisponibles as $room): ?>
+            <?php foreach ($habitacionesDisponiblesView as $room): ?>
             <li class="room-card">
                 <div class="room-details">
                     <h3><?php echo htmlspecialchars($room['Name']); ?></h3>
@@ -195,8 +145,9 @@ $nombreCadena = "Hoteles Nueva España S.L.";
                 <div class="room-price">
                     <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
                     <p style="color: #999;">Precio por noche</p>
-                    <a href="reservar.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id']; ?>" class="btn-select">
-                        Reservar
+
+                    <a href="index.php?page=reserva&hotel_id=<?php echo $hotelView['Id']; ?>&room_type_id=<?php echo $room['Id']; ?>" class="btn-select">
+                        Seleccionar
                     </a>
                 </div>
             </li>
