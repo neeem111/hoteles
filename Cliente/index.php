@@ -168,7 +168,7 @@ if ($stmt) {
 
         /* --- Estilos del Encabezado Principal (Hero) --- */
         .header {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('hotel_hero_background.jpg'); /* */
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg'); /* */
             background-size: cover;
             background-position: center;
             color: white;
