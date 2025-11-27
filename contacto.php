@@ -3,6 +3,7 @@ session_start();
 // Comprobación simple para mensaje de éxito
 $mensaje_exito = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Aquí iría la lógica para guardar en la nueva tabla ContactMessages
     $mensaje_exito = "¡Gracias por contactarnos! Recibimos tu mensaje y te responderemos pronto.";
 }
 $is_logged_in = isset($_SESSION['user_id']);
@@ -90,7 +91,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
         </form>
         
         <div class="back-store" style="margin-top: 25px;">
-            <a href="index.php">← Volver a la tienda</a>
+            <a href="Cliente/index.php">← Volver a la tienda</a>
         </div>
     </div>
 </body>
