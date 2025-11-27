@@ -6,7 +6,7 @@ include('conexion.php');
 $hotel_id = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
 
 if ($hotel_id <= 0) {
-    header("Location: index.php?error=Hotel+no+especificado");
+    header("Location: Cliente/index.php?error=Hotel+no+especificado");
     exit();
 }
 
@@ -47,7 +47,7 @@ function obtenerTiposHabitacion($conn) {
 $hotel = obtenerDetallesHotel($conn, $hotel_id);
 
 if (!$hotel) {
-    header("Location: index.php?error=Hotel+no+encontrado");
+    header("Location: Cliente/index.php?error=Hotel+no+encontrado");
     exit();
 }
 
@@ -80,7 +80,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
 <head>
     <meta charset="UTF-8">
     <title>Reserva en <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="styleCarlos.css"> <style>
+    <link rel="stylesheet" href="../styleCarlos.css"> <style>
         :root {
             --color-primary: #a02040;
             --color-secondary: #ffc107;
@@ -168,7 +168,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
 <body>
 
     <nav style="background:#a02040; color:white; padding:15px; text-align:center; position:fixed; top:0; width:100%; z-index:1000;">
-        <a href="index.php" style="color:white; text-decoration:none; font-size:1.5em; font-weight:bold;">← Volver a Hoteles</a>
+        <a href="Cliente/index.php" style="color:white; text-decoration:none; font-size:1.5em; font-weight:bold;">← Volver a Hoteles</a>
         <span style="float:right; margin-right: 20px; font-size:1.1em;">
             <?php echo $is_logged_in ? "Bienvenido, " . $user_name : '<a href="login.php" style="color:white;">Iniciar Sesión</a>'; ?>
         </span>

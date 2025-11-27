@@ -13,14 +13,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $resultado = $stmt->get_result();
 
     if ($resultado && $resultado->num_rows === 1) {
+
         $user = $resultado->fetch_assoc();
 
         if (password_verify($pass_form, $user['Password'])) {
 
+            // Guardar datos del usuario en sesión
             $_SESSION['user_id']    = $user['Id'];
             $_SESSION['user_name']  = $user['Name'];
             $_SESSION['user_email'] = $user['Email'];
-            $_SESSION['user_role']  = $user['Rol'] ?? 'Cliente'; // fallback por si hay NULL viejos
+            $_SESSION['user_role']  = $user['Rol'] ?? 'Cliente';
+
+            // Inicializar log_id
+            $_SESSION['login_log_id'] = null;
+
+            // Registrar en login_logs
+            $user_id = $user['Id'];
+            $user_name = $user['Name'];
+
+            $insert_log = "INSERT INTO login_logs (user_id, user_name, login_time)
+                           VALUES ($user_id, '$user_name', NOW())";
+
+            $conn->query($insert_log);
+
+            // Guardar en la sesión el ID del log creado
+            $_SESSION['login_log_id'] = $conn->insert_id;
 
             // Redirección según rol
             if (strcasecmp($_SESSION['user_role'], 'Administrador') === 0) {
@@ -34,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: login.php?error=Contraseña+incorrecta");
             exit();
         }
+
     } else {
         header("Location: login.php?error=Usuario+no+encontrado");
         exit();
@@ -42,3 +60,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: login.php");
     exit();
 }
+?>
