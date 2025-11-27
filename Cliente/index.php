@@ -4,7 +4,7 @@ session_start(); // Iniciar sesión al comienzo del archivo
 $nombreCadena = "Hoteles Nueva España S.L.";
 $ciudadesDisponibles = ['Valencia', 'Santander', 'Toledo'];
 
-// --- NUEVA LÓGICA DE PRECIOS POR CIUDAD ---
+// --- LÓGICA DE PRECIOS POR CIUDAD ---
 $tarifasBase = [
     'Toledo' => 20,
     'Valencia' => 30,
@@ -21,6 +21,7 @@ $incrementoPorCiudad = [
 $is_logged_in = isset($_SESSION['user_id']);
 $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 
+// *** RUTA DE INCLUSIÓN CORREGIDA: sube un nivel (../) para encontrar conexion.php ***
 include('../conexion.php'); 
 
 // Parámetros de filtrado
@@ -169,36 +170,6 @@ if ($stmt) {
         /* --- Estilos del Encabezado Principal (Hero) --- */
         .header {
             background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg'); /* RUTA DE IMAGEN AJUSTADA */
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 80px 20px;
-        }
-        .user-greeting {
-            color: var(--color-dark);
-            font-weight: 500;
-            font-size: 1em;
-        }
-        .cart-icon a {
-            color: var(--color-dark);
-            font-size: 1.5em;
-            text-decoration: none;
-        }
-        .cart-icon a:hover {
-            color: var(--color-primary);
-        }
-        .admin-link {
-            background: #28a745;
-            color: white;
-            border: 1px solid #28a745;
-        }
-        .admin-link:hover {
-            background: #1e7e34;
-        }
-
-        /* --- Estilos del Encabezado Principal (Hero) --- */
-        .header {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg'); /* */
             background-size: cover;
             background-position: center;
             color: white;
@@ -393,14 +364,6 @@ if ($stmt) {
             <div class="cart-icon">
                 <a href="../cart.php" title="Ver Carrito">🛒 Carrito</a>
             </div>
-    <nav class="navbar">
-        <a href="index.php" class="navbar-brand">Hoteles NESL</a>
-        
-        <div class="navbar-actions">
-            
-            <div class="cart-icon">
-                <a href="cart.php" title="Ver Carrito">🛒 Carrito</a> 
-            </div>
 
             <?php if ($is_logged_in): ?>
                 <span class="user-greeting">Bienvenido, <strong><?php echo $user_name; ?></strong></span>
@@ -439,9 +402,7 @@ if ($stmt) {
                 </select>
                 <button type="submit">🔍 Buscar Hotel</button>
             </form>
-            <?php if (!empty($filtroCiudad)): ?>
-                 <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
-            <?php endif; ?>
+            <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
         </div>
         
         <h2>Ofertas Destacadas</h2>
