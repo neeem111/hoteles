@@ -217,7 +217,7 @@ $conn->close();
         font-size: 0.9em;
         font-weight: 600;">
         
-        <a href="login.php"
+        <a href="../login.php"
             style="
                 background: #28a745;
                 color: white;
