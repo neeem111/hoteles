@@ -293,8 +293,9 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
             </div>
 
             <div class="badges">
-                <span class="badge">Disponibles: <?php echo (int)$tipo['AvailableRooms']; ?></span>
                 <span class="badge">Usuario: <?php echo htmlspecialchars($userName); ?></span>
+                <span class="badge">Email: <?php echo htmlspecialchars($userEmail); ?></span>
+
             </div>
 
             <hr style="border:none;border-top:1px solid #eee;margin:15px 0;">
