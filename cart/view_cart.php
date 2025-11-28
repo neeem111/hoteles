@@ -100,7 +100,7 @@ foreach ($cart as $id => $item) {
             </table>
             <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center">
                 <div>
-                    <a href="../index.php" class="btn btn-ghost">← Seguir comprando</a>
+                    <a href="Cliente/index.php" class="btn btn-ghost">← Seguir comprando</a>
                 </div>
                 <div class="actions">
                     <span style="font-size:18px; margin-right:14px">Total: <strong>$<?php echo number_format($total, 2); ?></strong></span>
