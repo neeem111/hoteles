@@ -69,7 +69,7 @@ foreach ($cart as $id => $item) {
         <?php endif; ?>
 
         <?php if (empty($cart)): ?>
-            <p>Tu carrito está vacío. <a href="../index.php">Volver a la tienda</a></p>
+            <p>Tu carrito está vacío. <a href="../Cliente/index.php">Volver a la tienda</a></p>
         <?php else: ?>
             <form method="post" action="update_cart.php">
             <table>
