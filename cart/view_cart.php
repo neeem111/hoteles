@@ -23,7 +23,9 @@ if (!empty($cart)) {
 
 $total = 0;
 foreach ($cart as $id => $item) {
-    $total += $item['precio'] * $item['cantidad'];
+    $nights     = isset($item['nights']) ? (int)$item['nights'] : 1;
+    $roomsCount = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
+    $total += $item['precio'] * $nights * $roomsCount;
 }
 
 ?>
@@ -76,9 +78,10 @@ foreach ($cart as $id => $item) {
                 <thead>
                     <tr>
                         <th style="width:40%">Hotel</th>
-                        <th style="width:20%">Ciudad</th>
+                        <th style="width:15%">Ciudad</th>
                         <th style="width:15%">Precio / noche</th>
                         <th style="width:10%">Noches</th>
+                        <th style="width:10%">Habitaciones</th>
                         <th style="width:10%">Subtotal</th>
                         <th style="width:5%"></th>
                     </tr>
@@ -88,11 +91,26 @@ foreach ($cart as $id => $item) {
                         <tr>
                             <td><?php echo isset($hoteles_en_carrito[$id]) ? htmlspecialchars($hoteles_en_carrito[$id]['Name']) : 'Hotel #' . $id; ?></td>
                             <td><?php echo isset($hoteles_en_carrito[$id]) ? htmlspecialchars($hoteles_en_carrito[$id]['City']) : '-'; ?></td>
+                            <?php
+                                $nights     = isset($item['nights']) ? (int)$item['nights'] : 1;
+                                $roomsCount = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
+                                $lineTotal  = $item['precio'] * $nights * $roomsCount;
+                            ?>
                             <td class="price">$<?php echo number_format($item['precio'], 2); ?></td>
+                            <td><?php echo $nights; ?></td>
                             <td>
-                                <input type="number" name="cantidad[<?php echo intval($id); ?>]" value="<?php echo intval($item['cantidad']); ?>" min="0" style="width:90px; padding:8px; font-size:15px">
+                                <!-- cantidad = nº de habitaciones editable -->
+                                <input 
+                                    type="number" 
+                                    name="cantidad[<?php echo intval($id); ?>]" 
+                                    value="<?php echo $roomsCount; ?>" 
+                                    min="0" 
+                                    style="width:90px; padding:8px; font-size:15px"
+                                >
                             </td>
-                            <td class="price">$<?php echo number_format($item['precio'] * $item['cantidad'], 2); ?></td>
+                            <td class="price">$<?php echo number_format($lineTotal, 2); ?></td>
+                            <td><a href="remove_from_cart.php?hotel_id=<?php echo intval($id); ?>">Eliminar</a></td>
+
                             <td><a href="remove_from_cart.php?hotel_id=<?php echo intval($id); ?>">Eliminar</a></td>
                         </tr>
                     <?php endforeach; ?>
@@ -105,7 +123,9 @@ foreach ($cart as $id => $item) {
                 <div class="actions">
                     <span style="font-size:18px; margin-right:14px">Total: <strong>$<?php echo number_format($total, 2); ?></strong></span>
                     <button type="submit" class="btn btn-primary">Actualizar Carrito</button>
-                    <a href="#" class="btn btn-primary" style="background:#28a745; margin-left:8px">Proceder al Pago</a>
+                    <a href="checkout.php" class="btn btn-primary" style="background:#28a745; margin-left:8px">
+                        Proceder al Pago
+                    </a>
                 </div>
             </div>
             </form>

@@ -343,6 +343,18 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 </div>
 
                 <div class="field">
+                  <label for="num_rooms">Número de habitaciones</label>
+                  <input 
+                      type="number" 
+                      name="num_rooms" 
+                      id="num_rooms" 
+                      min="1" 
+                      value="1"
+                      required
+                  >
+              </div>
+
+                <div class="field">
                     <label for="notes">Notas para el hotel (opcional)</label>
                     <textarea name="notes" id="notes" placeholder="Ej: Llegaré tarde por la noche, necesito cuna, etc."></textarea>
                 </div>
