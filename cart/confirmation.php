@@ -11,7 +11,9 @@ if (empty($last)) {
 }
 
 $userName = $_SESSION['user_name'] ?? '';
-$paypalClientId = getenv('PAYPAL_CLIENT_ID') ?: 'sb';
+$paypalEnvClient = getenv('PAYPAL_CLIENT_ID');
+$paypalClientId = $paypalEnvClient !== false && $paypalEnvClient !== '' ? $paypalEnvClient : 'sb';
+$paypalSandboxEmail = getenv('PAYPAL_SANDBOX_EMAIL') ?: 'sb-847k0p48080697@personal.example.com';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -134,8 +136,13 @@ $paypalClientId = getenv('PAYPAL_CLIENT_ID') ?: 'sb';
             <div style="margin-top:26px; padding:16px; border:1px solid #e9ecef; border-radius:10px; background:#f8f9fa;">
                 <h3 style="margin-top:0;">Pagar ahora con PayPal</h3>
                 <p style="margin:6px 0 12px 0; color:#555;">
-                    Usa tu cuenta de prueba sandbox (<?php echo htmlspecialchars('sb-847k0p48080697@personal.example.com'); ?>) para completar el pago seguro (solo entorno de pruebas).
+                    Usa tu cuenta de prueba sandbox (<?php echo htmlspecialchars($paypalSandboxEmail); ?>) para completar el pago seguro (solo entorno de pruebas).
                 </p>
+                <?php if ($paypalEnvClient === false || $paypalEnvClient === ''): ?>
+                    <p style="color:#b02a37; font-size:0.9rem; margin-top:-6px;">
+                        Aviso: usando el client-id sandbox por defecto. Configura PAYPAL_CLIENT_ID para tu entorno.
+                    </p>
+                <?php endif; ?>
                 <div id="paypal-button-container"></div>
                 <div id="paypal-paid-msg" style="display:none; margin-top:10px; color:#28a745; font-weight:600;"></div>
                 <div id="paypal-error-msg" style="display:none; margin-top:10px; color:#b02a37;"></div>
@@ -149,10 +156,11 @@ $paypalClientId = getenv('PAYPAL_CLIENT_ID') ?: 'sb';
         </div>
     </div>
 
+    <?php $totalForPayPal = number_format(max(0, (float)$totalGlobal), 2, '.', ''); ?>
     <script src="https://www.paypal.com/sdk/js?client-id=<?php echo urlencode($paypalClientId); ?>&currency=EUR"></script>
     <script>
         (function() {
-            const totalAmount = "<?php echo number_format($totalGlobal, 2, '.', ''); ?>";
+            const totalAmount = "<?php echo htmlspecialchars($totalForPayPal); ?>";
             const paidMsg = document.getElementById('paypal-paid-msg');
             const errorMsg = document.getElementById('paypal-error-msg');
 

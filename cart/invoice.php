@@ -7,12 +7,18 @@ if (empty($last)) {
     header('Location: ../Cliente/index.php');
     exit;
 }
+// Ensure the user is logged in before showing invoice
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../login.php');
+    exit;
+}
 
 $userName  = $_SESSION['user_name']  ?? 'Cliente';
 $userEmail = $_SESSION['user_email'] ?? '';
 
 // Datos simples de la factura
-$invoiceNumber = 'INV-' . date('Ymd') . '-' . substr(uniqid('', true), -6);
+$suffix = bin2hex(random_bytes(3));
+$invoiceNumber = 'INV-' . date('Ymd') . '-' . $suffix;
 $issueDate     = date('Y-m-d');
 
 $totalGlobal = 0;
