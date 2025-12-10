@@ -362,7 +362,7 @@ if ($stmt) {
         <div class="navbar-actions">
             
             <div class="cart-icon">
-                <a href="../cart.php" title="Ver Carrito">🛒 Carrito</a>
+                <a href="../cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
             </div>
 
             <?php if ($is_logged_in): ?>

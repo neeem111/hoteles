@@ -10,18 +10,6 @@ if ($hotel_id <= 0) {
     exit();
 }
 
-// Lógica de precios definida
-$tarifasBase = [
-    'Toledo' => 20,
-    'Valencia' => 30,
-    'Santander' => 25
-];
-$incrementoPorCiudad = [
-    'Toledo' => 15,
-    'Valencia' => 12,
-    'Santander' => 10
-];
-
 // --- FUNCIONES PARA OBTENER DATOS DE LA BBDD ---
 
 // Función para obtener los detalles del hotel
@@ -34,11 +22,29 @@ function obtenerDetallesHotel($conn, $id) {
     return $resultado->fetch_assoc();
 }
 
-// Función para obtener los tipos de habitación y sus costes (usando la BBDD RoomType)
-function obtenerTiposHabitacion($conn) {
-    // Ordenamos por CostPerNight para aplicar el incremento de forma consistente
-    $sql = "SELECT Id, Name, Guests FROM RoomType ORDER BY CostPerNight ASC";
-    $resultado = $conn->query($sql);
+/**
+ * Función para obtener SOLO los tipos de habitación
+ * que tienen habitaciones DISPONIBLES en este hotel,
+ * usando el precio real de RoomType.CostPerNight
+ */
+function obtenerTiposHabitacionDisponiblesPorHotel($conn, $hotelId) {
+    $sql = "SELECT 
+                rt.Id,
+                rt.Name,
+                rt.Guests,
+                rt.CostPerNight,
+                COUNT(r.Id) AS AvailableRooms
+            FROM RoomType rt
+            INNER JOIN Rooms r ON r.Id_RoomType = rt.Id
+            WHERE r.Id_Hotel = ?
+              AND r.Available = 1
+            GROUP BY rt.Id, rt.Name, rt.Guests, rt.CostPerNight
+            ORDER BY rt.CostPerNight ASC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $hotelId);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
     return $resultado->fetch_all(MYSQLI_ASSOC);
 }
 
@@ -51,22 +57,18 @@ if (!$hotel) {
     exit();
 }
 
-$tiposHabitacion = obtenerTiposHabitacion($conn);
+// Ahora obtenemos SOLO tipos con habitaciones disponibles y su precio real
+$tiposHabitacion = obtenerTiposHabitacionDisponiblesPorHotel($conn, $hotel_id);
 
 $ciudad = $hotel['City'];
-$precioBase = $tarifasBase[$ciudad] ?? 50;
-$incremento = $incrementoPorCiudad[$ciudad] ?? 15;
 
 $habitacionesDisponibles = [];
-$contador = 0;
 
-// Aplicar la lógica de precios
+// Aplicar la lógica de precios: AHORA usamos CostPerNight de la BD
 foreach ($tiposHabitacion as $tipo) {
-    // Calculamos el precio: Base + (Contador * Incremento)
-    $precioCalculado = $precioBase + ($contador * $incremento);
-    $tipo['PrecioNoche'] = number_format($precioCalculado, 2, '.', '');
+    // Precio directamente desde RoomType.CostPerNight
+    $tipo['PrecioNoche'] = number_format($tipo['CostPerNight'], 2, '.', '');
     $habitacionesDisponibles[] = $tipo;
-    $contador++; 
 }
 
 // Comprobar estado de la sesión para el navbar
@@ -80,7 +82,8 @@ $nombreCadena = "Hoteles Nueva España S.L.";
 <head>
     <meta charset="UTF-8">
     <title>Reserva en <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="../styleCarlos.css"> <style>
+    <link rel="stylesheet" href="../styleCarlos.css">
+    <style>
         :root {
             --color-primary: #a02040;
             --color-secondary: #ffc107;
@@ -174,7 +177,6 @@ $nombreCadena = "Hoteles Nueva España S.L.";
         </span>
     </nav>
 
-
     <div class="container">
         <div class="hotel-header">
             <h1><?php echo htmlspecialchars($hotel['Name']); ?></h1>
@@ -184,22 +186,26 @@ $nombreCadena = "Hoteles Nueva España S.L.";
         <h2>Tipos de Habitación Disponibles</h2>
 
         <ul class="room-listing">
-            <?php foreach ($habitacionesDisponibles as $room): ?>
-            <li class="room-card">
-                <div class="room-details">
-                    <h3><?php echo htmlspecialchars($room['Name']); ?></h3>
-                    <p>Máximo de Huéspedes: <strong><?php echo htmlspecialchars($room['Guests']); ?></strong></p>
-                    <p>ID Tipo: <?php echo htmlspecialchars($room['Id']); ?></p>
-                </div>
-                <div class="room-price">
-                    <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
-                    <p style="color: #999;">Precio por noche</p>
-                    <a href="reserva_proceso.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id']; ?>" class="btn-select">
-                        Seleccionar
-                    </a>
-                </div>
-            </li>
-            <?php endforeach; ?>
+            <?php if (count($habitacionesDisponibles) === 0): ?>
+                <li>No hay habitaciones disponibles en este hotel ahora mismo.</li>
+            <?php else: ?>
+                <?php foreach ($habitacionesDisponibles as $room): ?>
+                <li class="room-card">
+                    <div class="room-details">
+                        <h3><?php echo htmlspecialchars($room['Name']); ?></h3>
+                        <p>Máximo de Huéspedes: <strong><?php echo htmlspecialchars($room['Guests']); ?></strong></p>
+                        <!-- Ya no mostramos ID ni número de disponibles -->
+                    </div>
+                    <div class="room-price">
+                        <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
+                        <p style="color: #999;">Precio por noche</p>
+                        <a href="booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id']; ?>" class="btn-select">
+                            Seleccionar
+                        </a>
+                    </div>
+                </li>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </ul>
 
     </div>
