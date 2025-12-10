@@ -1,5 +1,6 @@
 <?php
 session_start();
+// Ajusta la ruta si view_cart.php está en una subcarpeta (ej: cart/)
 include('../conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
@@ -280,7 +281,9 @@ foreach ($cart as $id => $item) {
             <div style="text-align: right; margin-bottom: 20px;">
                 <button type="submit" class="btn btn-update">🔄 Recalcular Precios</button>
             </div>
-        </form> <div class="cart-footer">
+        </form>
+        
+        <div class="cart-footer">
             <div>
                 <a href="../Cliente/index.php" class="btn btn-ghost">← Seguir Buscando</a>
             </div>

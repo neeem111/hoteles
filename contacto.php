@@ -1,11 +1,47 @@
 <?php
 session_start();
-// Comprobación simple para mensaje de éxito
-$mensaje_exito = "";
+// La conexión debe subir un nivel (asumo que contacto.php está en la raíz)
+include('conexion.php'); 
+
+$mensaje = "";
+$exito = false;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Aquí iría la lógica para guardar en la nueva tabla ContactMessages
-    $mensaje_exito = "¡Gracias por contactarnos! Recibimos tu mensaje y te responderemos pronto.";
+    // 1. Recoger y sanear los datos
+    $name    = trim($_POST['name'] ?? '');
+    $email   = trim($_POST['email'] ?? '');
+    $subject = trim($_POST['subject'] ?? '');
+    $message = trim($_POST['message'] ?? '');
+    
+    // 2. Validación básica
+    if (empty($name) || empty($email) || empty($message)) {
+        $mensaje = "Por favor, completa todos los campos obligatorios.";
+        $exito = false;
+    } else {
+        // 3. Preparar la inserción en la tabla ContactMessages
+        $stmt = $conn->prepare(
+            "INSERT INTO ContactMessages (Name, Email, Subject, Message)
+             VALUES (?, ?, ?, ?)"
+        );
+        
+        if ($stmt) {
+            $stmt->bind_param("ssss", $name, $email, $subject, $message);
+
+            if ($stmt->execute()) {
+                $mensaje = "¡Gracias por contactarnos! Hemos guardado tu mensaje y te responderemos pronto.";
+                $exito = true;
+            } else {
+                $mensaje = "Error al guardar el mensaje. Intenta de nuevo más tarde.";
+                $exito = false;
+            }
+            $stmt->close();
+        } else {
+            $mensaje = "Error interno del servidor al preparar la inserción.";
+            $exito = false;
+        }
+    }
 }
+
 $is_logged_in = isset($_SESSION['user_id']);
 $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 ?>
@@ -55,8 +91,10 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
         <h1>Contáctanos</h1>
         <p class="subtitle" style="margin-bottom: 30px;">Estamos aquí para ayudarte con tus reservas y consultas.</p>
 
-        <?php if ($mensaje_exito !== ""): ?>
-            <div class="success-msg"><?php echo $mensaje_exito; ?></div>
+        <?php if ($mensaje !== ""): ?>
+            <div class="<?php echo $exito ? 'success-msg' : 'error-msg'; ?>">
+                <?php echo $mensaje; ?>
+            </div>
         <?php endif; ?>
 
         <div class="contact-info">
