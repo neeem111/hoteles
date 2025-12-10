@@ -281,7 +281,9 @@ foreach ($cart as $id => $item) {
             <div style="text-align: right; margin-bottom: 20px;">
                 <button type="submit" class="btn btn-update">🔄 Recalcular Precios</button>
             </div>
-        </form> <div class="cart-footer">
+        </form>
+        
+        <div class="cart-footer">
             <div>
                 <a href="../Cliente/index.php" class="btn btn-ghost">← Seguir Buscando</a>
             </div>

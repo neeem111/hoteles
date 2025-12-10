@@ -21,29 +21,37 @@ $check_out       = trim($_POST['check_out'] ?? '');
 $notes           = trim($_POST['notes'] ?? '');
 $num_rooms       = isset($_POST['num_rooms']) ? intval($_POST['num_rooms']) : 1;
 
+// Validación básica de campos requeridos
 if ($hotel_id <= 0 || $room_type_id <= 0 || $price_per_night <= 0 || $check_in === '' || $check_out === '' || $num_rooms <= 0) {
     $_SESSION['cart_error'] = 'Datos incompletos al añadir la habitación al carrito.';
     header('Location: ../Cliente/index.php');
     exit;
 }
 
-// Calcular número de noches
+// --- INICIO DE VALIDACIÓN DE FECHAS CRÍTICA ---
 try {
     $checkInDate  = new DateTime($check_in);
     $checkOutDate = new DateTime($check_out);
+    
+    // 1. Validar que la salida sea estrictamente posterior a la entrada
+    if ($checkOutDate <= $checkInDate) {
+        $_SESSION['cart_error'] = 'La fecha de salida debe ser posterior a la fecha de entrada. Por favor, revisa tus fechas.';
+        header('Location: ../Cliente/index.php');
+        exit;
+    }
+    
+    // 2. Calcular la diferencia (si la validación anterior pasa)
     $diff         = $checkInDate->diff($checkOutDate);
     $nights       = (int)$diff->days;
+    
 } catch (Exception $e) {
-    $_SESSION['cart_error'] = 'Fechas inválidas.';
+    // Esto captura errores si el formato de fecha es totalmente irreconocible
+    $_SESSION['cart_error'] = 'Fechas inválidas o con formato incorrecto.';
     header('Location: ../Cliente/index.php');
     exit;
 }
+// --- FIN DE VALIDACIÓN DE FECHAS CRÍTICA ---
 
-if ($nights <= 0) {
-    $_SESSION['cart_error'] = 'La fecha de salida debe ser posterior a la fecha de entrada.';
-    header('Location: ../Cliente/index.php');
-    exit;
-}
 
 // Inicializar carrito si no existe
 if (!isset($_SESSION['cart'])) {
@@ -51,9 +59,8 @@ if (!isset($_SESSION['cart'])) {
 }
 
 /**
- * Clave por hotel. 
- * Una entrada = "reserva en este hotel para estas fechas y este tipo de habitación".
- * Si vuelven a añadir el mismo hotel con el mismo tipo y fechas, sumamos habitaciones.
+ * Lógica de adición al carrito:
+ * Si ya existe el mismo hotel con el mismo tipo y fechas, se suman habitaciones.
  */
 if (isset($_SESSION['cart'][$hotel_id])) {
     $item = &$_SESSION['cart'][$hotel_id];
@@ -68,6 +75,8 @@ if (isset($_SESSION['cart'][$hotel_id])) {
         $item['cantidad'] += $num_rooms; // cantidad = nº habitaciones
     } else {
         // Si es otro tipo/fechas, sobreescribimos (simplificación para el proyecto)
+        // NOTA: En un proyecto real, esto debería ser un nuevo ítem en el carrito,
+        // usando una clave compuesta, no sobrescribiendo el hotel completo.
         $item = [
             'hotel_id'     => $hotel_id,
             'precio'       => $price_per_night, // precio por noche

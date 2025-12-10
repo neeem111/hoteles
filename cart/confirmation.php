@@ -125,12 +125,6 @@ $userName = $_SESSION['user_name'] ?? '';
                 </tbody>
             </table>
 
-            <p class="note">
-                Esta página muestra un resumen básico de tus reservas.  
-                Los datos sensibles de pago (como tarjeta) no se almacenan ni se muestran aquí en ningún momento.  
-                Puedes consultar más detalles contactando con el hotel o en el panel de usuario (si lo implementáis).
-            </p>
-
             <a href="../Cliente/index.php" class="btn">Volver a la página principal</a>
         </div>
     </div>
