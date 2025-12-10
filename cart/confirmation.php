@@ -81,6 +81,17 @@ $userName = $_SESSION['user_name'] ?? '';
         .btn:hover {
             background:#801933;
         }
+        .btn-invoice {
+            background-color: #007bff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .btn-invoice:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -97,10 +108,9 @@ $userName = $_SESSION['user_name'] ?? '';
                     <tr>
                         <th># Reserva</th>
                         <th>Hotel</th>
-                        <th>Entrada</th>
-                        <th>Salida</th>
-                        <th>Noches</th>
-                        <th>Importe estimado</th>
+                        <th>Fechas</th>
+                        <th>Total (con IVA)</th>
+                        <th>Factura</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -112,15 +122,25 @@ $userName = $_SESSION['user_name'] ?? '';
                         <tr>
                             <td><?php echo (int)$res['reservation_id']; ?></td>
                             <td><?php echo htmlspecialchars($res['hotel_name']); ?></td>
-                            <td><?php echo htmlspecialchars($res['check_in']); ?></td>
-                            <td><?php echo htmlspecialchars($res['check_out']); ?></td>
-                            <td><?php echo (int)$res['nights']; ?></td>
+                            <td>
+                                <?php echo htmlspecialchars($res['check_in']); ?> a<br>
+                                <?php echo htmlspecialchars($res['check_out']); ?>
+                            </td>
                             <td><?php echo number_format($res['total'], 2); ?> €</td>
+                            <td>
+                                <?php if(isset($res['invoice_id'])): ?>
+                                    <a href="../Cliente/ver_factura.php?id=<?php echo $res['invoice_id']; ?>" target="_blank" class="btn-invoice">
+                                        📄 Descargar
+                                    </a>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     <tr>
-                        <td colspan="5" class="total" style="text-align:right;">Total estimado</td>
-                        <td class="total"><?php echo number_format($totalGlobal, 2); ?> €</td>
+                        <td colspan="3" class="total" style="text-align:right;">Total Pagado</td>
+                        <td class="total" colspan="2"><?php echo number_format($totalGlobal, 2); ?> €</td>
                     </tr>
                 </tbody>
             </table>
@@ -128,7 +148,7 @@ $userName = $_SESSION['user_name'] ?? '';
             <p class="note">
                 Esta página muestra un resumen básico de tus reservas.  
                 Los datos sensibles de pago (como tarjeta) no se almacenan ni se muestran aquí en ningún momento.  
-                Puedes consultar más detalles contactando con el hotel o en el panel de usuario (si lo implementáis).
+                Puedes consultar más detalles contactando con el hotel o en el panel de usuario.
             </p>
 
             <a href="../Cliente/index.php" class="btn">Volver a la página principal</a>
