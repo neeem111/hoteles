@@ -11,6 +11,9 @@ if (empty($last)) {
 }
 
 $userName = $_SESSION['user_name'] ?? '';
+$paypalEnvClient = getenv('PAYPAL_CLIENT_ID');
+$paypalClientId = $paypalEnvClient !== false && $paypalEnvClient !== '' ? $paypalEnvClient : 'sb';
+$paypalSandboxEmail = getenv('PAYPAL_SANDBOX_EMAIL') ?: 'sandbox@example.com';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -125,14 +128,83 @@ $userName = $_SESSION['user_name'] ?? '';
                 </tbody>
             </table>
 
+            <div class="pay-block" style="margin-top:18px;">
+                <a href="invoice.php" class="btn">Generar factura</a>
+                <a href="../Cliente/index.php" class="btn" style="background:#6c757d; margin-left:10px;">Volver a la página principal</a>
+            </div>
+
+            <div style="margin-top:26px; padding:16px; border:1px solid #e9ecef; border-radius:10px; background:#f8f9fa;">
+                <h3 style="margin-top:0;">Pagar ahora con PayPal</h3>
+                <p style="margin:6px 0 12px 0; color:#555;">
+                    Usa tu cuenta de prueba sandbox (<?php echo htmlspecialchars($paypalSandboxEmail); ?>) para completar el pago seguro (solo entorno de pruebas).
+                </p>
+                <?php if ($paypalEnvClient === false || $paypalEnvClient === ''): ?>
+                    <p style="color:#b02a37; font-size:0.9rem; margin-top:-6px;">
+                        Aviso: usando el client-id sandbox genérico. Configura PAYPAL_CLIENT_ID y PAYPAL_SANDBOX_EMAIL para tu entorno.
+                    </p>
+                <?php endif; ?>
+                <div id="paypal-button-container"></div>
+                <div id="paypal-paid-msg" style="display:none; margin-top:10px; color:#28a745; font-weight:600;"></div>
+                <div id="paypal-error-msg" style="display:none; margin-top:10px; color:#b02a37;"></div>
+            </div>
+
             <p class="note">
                 Esta página muestra un resumen básico de tus reservas.  
                 Los datos sensibles de pago (como tarjeta) no se almacenan ni se muestran aquí en ningún momento.  
                 Puedes consultar más detalles contactando con el hotel o en el panel de usuario (si lo implementáis).
             </p>
-
-            <a href="../Cliente/index.php" class="btn">Volver a la página principal</a>
         </div>
     </div>
+
+    <?php $totalForPayPal = number_format(max(0, (float)$totalGlobal), 2, '.', ''); ?>
+    <script src="https://www.paypal.com/sdk/js?client-id=<?php echo urlencode($paypalClientId); ?>&currency=EUR"></script>
+    <script>
+        (function() {
+            const totalAmount = "<?php echo htmlspecialchars($totalForPayPal); ?>";
+            const paidMsg = document.getElementById('paypal-paid-msg');
+            const errorMsg = document.getElementById('paypal-error-msg');
+
+            paypal.Buttons({
+                style: {
+                    layout: 'vertical',
+                    color: 'gold',
+                    shape: 'pill',
+                    label: 'paypal'
+                },
+                createOrder: function(data, actions) {
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                currency_code: 'EUR',
+                                value: totalAmount
+                            },
+                            description: 'Reserva Hoteles NESL'
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        if (paidMsg) {
+                            paidMsg.textContent = 'Pago completado correctamente via PayPal.';
+                            paidMsg.style.display = 'block';
+                        }
+                        if (errorMsg) {
+                            errorMsg.style.display = 'none';
+                        }
+                    });
+                },
+                onError: function(err) {
+                    if (errorMsg) {
+                        errorMsg.textContent = 'No se pudo completar el pago con PayPal. Inténtalo de nuevo o contacta con soporte.';
+                        errorMsg.style.display = 'block';
+                    }
+                    if (paidMsg) {
+                        paidMsg.style.display = 'none';
+                    }
+                    console.error(err);
+                }
+            }).render('#paypal-button-container');
+        })();
+    </script>
 </body>
 </html>
