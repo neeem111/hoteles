@@ -1,15 +1,15 @@
 <?php
 session_start();
 
+// Ensure the user is logged in before showing invoice
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../login.php');
+    exit;
+}
 // Last reservation info is required to build the invoice
 $last = $_SESSION['last_reservations'] ?? [];
 if (empty($last)) {
     header('Location: ../Cliente/index.php');
-    exit;
-}
-// Ensure the user is logged in before showing invoice
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php');
     exit;
 }
 
@@ -17,7 +17,7 @@ $userName  = $_SESSION['user_name']  ?? 'Cliente';
 $userEmail = $_SESSION['user_email'] ?? '';
 
 // Datos simples de la factura
-$suffix = bin2hex(random_bytes(3));
+$suffix = bin2hex(random_bytes(6));
 $invoiceNumber = 'INV-' . date('Ymd') . '-' . $suffix;
 $issueDate     = date('Y-m-d');
 

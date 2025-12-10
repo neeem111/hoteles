@@ -13,7 +13,7 @@ if (empty($last)) {
 $userName = $_SESSION['user_name'] ?? '';
 $paypalEnvClient = getenv('PAYPAL_CLIENT_ID');
 $paypalClientId = $paypalEnvClient !== false && $paypalEnvClient !== '' ? $paypalEnvClient : 'sb';
-$paypalSandboxEmail = getenv('PAYPAL_SANDBOX_EMAIL') ?: 'sb-847k0p48080697@personal.example.com';
+$paypalSandboxEmail = getenv('PAYPAL_SANDBOX_EMAIL') ?: 'sandbox@example.com';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -140,7 +140,7 @@ $paypalSandboxEmail = getenv('PAYPAL_SANDBOX_EMAIL') ?: 'sb-847k0p48080697@perso
                 </p>
                 <?php if ($paypalEnvClient === false || $paypalEnvClient === ''): ?>
                     <p style="color:#b02a37; font-size:0.9rem; margin-top:-6px;">
-                        Aviso: usando el client-id sandbox por defecto. Configura PAYPAL_CLIENT_ID para tu entorno.
+                        Aviso: usando el client-id sandbox genérico. Configura PAYPAL_CLIENT_ID y PAYPAL_SANDBOX_EMAIL para tu entorno.
                     </p>
                 <?php endif; ?>
                 <div id="paypal-button-container"></div>
@@ -185,7 +185,7 @@ $paypalSandboxEmail = getenv('PAYPAL_SANDBOX_EMAIL') ?: 'sb-847k0p48080697@perso
                 onApprove: function(data, actions) {
                     return actions.order.capture().then(function(details) {
                         if (paidMsg) {
-                            paidMsg.textContent = 'Pago completado por ' + (details.payer?.name?.given_name || 'PayPal') + '. ID: ' + details.id;
+                            paidMsg.textContent = 'Pago completado correctamente via PayPal.';
                             paidMsg.style.display = 'block';
                         }
                         if (errorMsg) {
