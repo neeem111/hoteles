@@ -11,6 +11,7 @@ if (empty($last)) {
 }
 
 $userName = $_SESSION['user_name'] ?? '';
+$paypalClientId = getenv('PAYPAL_CLIENT_ID') ?: 'sb';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -133,7 +134,7 @@ $userName = $_SESSION['user_name'] ?? '';
             <div style="margin-top:26px; padding:16px; border:1px solid #e9ecef; border-radius:10px; background:#f8f9fa;">
                 <h3 style="margin-top:0;">Pagar ahora con PayPal</h3>
                 <p style="margin:6px 0 12px 0; color:#555;">
-                    Usa tu cuenta de prueba sandbox (<?php echo htmlspecialchars('sb-847k0p48080697@personal.example.com'); ?>) para completar el pago seguro.
+                    Usa tu cuenta de prueba sandbox (<?php echo htmlspecialchars('sb-847k0p48080697@personal.example.com'); ?>) para completar el pago seguro (solo entorno de pruebas).
                 </p>
                 <div id="paypal-button-container"></div>
                 <div id="paypal-paid-msg" style="display:none; margin-top:10px; color:#28a745; font-weight:600;"></div>
@@ -148,7 +149,7 @@ $userName = $_SESSION['user_name'] ?? '';
         </div>
     </div>
 
-    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=EUR"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=<?php echo urlencode($paypalClientId); ?>&currency=EUR"></script>
     <script>
         (function() {
             const totalAmount = "<?php echo number_format($totalGlobal, 2, '.', ''); ?>";

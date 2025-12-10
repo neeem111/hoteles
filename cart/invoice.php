@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Debe existir la información de la última reserva para poder generar la factura
+// Last reservation info is required to build the invoice
 $last = $_SESSION['last_reservations'] ?? [];
 if (empty($last)) {
     header('Location: ../Cliente/index.php');
@@ -12,7 +12,7 @@ $userName  = $_SESSION['user_name']  ?? 'Cliente';
 $userEmail = $_SESSION['user_email'] ?? '';
 
 // Datos simples de la factura
-$invoiceNumber = 'INV-' . date('Ymd') . '-' . substr(session_id(), 0, 6);
+$invoiceNumber = 'INV-' . date('Ymd') . '-' . substr(uniqid('', true), -6);
 $issueDate     = date('Y-m-d');
 
 $totalGlobal = 0;
