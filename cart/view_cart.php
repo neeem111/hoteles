@@ -1,5 +1,6 @@
 <?php
 session_start();
+// Ajusta la ruta si view_cart.php está en una subcarpeta (ej: cart/)
 include('../conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
