@@ -12,7 +12,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
     <style>
         /* Estilos específicos para la página de contenido */
         body {
-            background-color: #f8f9fa; /* Color de fondo claro */
+            background-color: #f8ff9fa; /* Color de fondo claro */
             padding-top: 50px; /* Deja espacio si usas un navbar fijo */
             display: block; /* Desactiva el flex de styleCarlos.css para body */
             min-height: auto;
@@ -44,7 +44,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 </head>
 <body>
     <div class="content-card">
-        <a href="index.php" style="color: #007bff; text-decoration: none; font-weight: bold;">← Volver a la página principal</a>
+        <a href="Cliente/index.php" style="color: #007bff; text-decoration: none; font-weight: bold;">← Volver a la página principal</a>
         
         <h1>Aviso Legal y Condiciones de Uso</h1>
         

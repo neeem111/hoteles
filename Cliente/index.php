@@ -4,7 +4,7 @@ session_start(); // Iniciar sesión al comienzo del archivo
 $nombreCadena = "Hoteles Nueva España S.L.";
 $ciudadesDisponibles = ['Valencia', 'Santander', 'Toledo'];
 
-// --- NUEVA LÓGICA DE PRECIOS POR CIUDAD ---
+// --- LÓGICA DE PRECIOS POR CIUDAD ---
 $tarifasBase = [
     'Toledo' => 20,
     'Valencia' => 30,
@@ -21,6 +21,7 @@ $incrementoPorCiudad = [
 $is_logged_in = isset($_SESSION['user_id']);
 $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 
+// *** RUTA DE INCLUSIÓN CORREGIDA: sube un nivel (../) para encontrar conexion.php ***
 include('../conexion.php'); 
 
 // Parámetros de filtrado
@@ -168,7 +169,7 @@ if ($stmt) {
 
         /* --- Estilos del Encabezado Principal (Hero) --- */
         .header {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg'); /* */
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg'); /* RUTA DE IMAGEN AJUSTADA */
             background-size: cover;
             background-position: center;
             color: white;
@@ -401,9 +402,7 @@ if ($stmt) {
                 </select>
                 <button type="submit">🔍 Buscar Hotel</button>
             </form>
-            <?php if (!empty($filtroCiudad)): ?>
-                 <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
-            <?php endif; ?>
+            <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
         </div>
         
         <h2>Ofertas Destacadas</h2>
@@ -440,6 +439,12 @@ if ($stmt) {
         <?php endif; ?>
     </div>
     
+
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <div style="margin: 30px 0 10px 0;">
+            <a href="mis_pedidos.php" class="btn" style="background:#a02040; color:#fff; padding:10px 22px; border-radius:8px; font-weight:600;">📦 Mis Pedidos</a>
+        </div>
+    <?php endif; ?>
     <footer class="footer">
         <p>&copy; <?php echo date("Y"); ?> <?php echo $nombreCadena; ?>. | <a href="../aviso_legal.php">Aviso Legal</a> | <a href="../contacto.php">Contáctanos</a></p>
     </footer>
