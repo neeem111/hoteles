@@ -209,6 +209,12 @@ foreach ($cart as $id => $item) {
 <body>
 
 <div class="cart-container">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <a href="../Cliente/mis_pedidos.php" class="btn" style="background:#a02040; color:#fff; margin-right:20px;">📦 Mis Pedidos</a>
+        <?php endif; ?>
+        <span style="font-size:1.3rem; color:#a02040; font-weight:600;">🛒 Carrito</span>
+    </div>
     <h1>🛒 Tu Carrito de Reservas</h1>
 
     <?php if (isset($_SESSION['cart_success'])): ?>
@@ -299,8 +305,8 @@ foreach ($cart as $id => $item) {
                         <input type="hidden" name="item_name" value="Reserva Hoteles NESL - Compra Múltiple">
                         <input type="hidden" name="amount" value="<?php echo $total; ?>">
                         
-                        <input type="hidden" name="return" value="http://localhost/hoteles/cart/checkout.php">
-                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/cart/pago_cancelado.php">
+                            <input type="hidden" name="return" value="http://localhost/cart/checkout.php">
+                            <input type="hidden" name="cancel_return" value="http://localhost/cart/pago_cancelado.php">
                         
                         <button type="submit" class="btn btn-paypal">
                             Pagar con PayPal 💳

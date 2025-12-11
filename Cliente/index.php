@@ -439,6 +439,12 @@ if ($stmt) {
         <?php endif; ?>
     </div>
     
+
+    <?php if (isset($_SESSION['user_id'])): ?>
+        <div style="margin: 30px 0 10px 0;">
+            <a href="mis_pedidos.php" class="btn" style="background:#a02040; color:#fff; padding:10px 22px; border-radius:8px; font-weight:600;">📦 Mis Pedidos</a>
+        </div>
+    <?php endif; ?>
     <footer class="footer">
         <p>&copy; <?php echo date("Y"); ?> <?php echo $nombreCadena; ?>. | <a href="../aviso_legal.php">Aviso Legal</a> | <a href="../contacto.php">Contáctanos</a></p>
     </footer>
