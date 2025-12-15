@@ -22,13 +22,19 @@ $is_logged_in = isset($_SESSION['user_id']);
 $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 
 // *** RUTA DE INCLUSIÓN CORREGIDA: sube un nivel (../) para encontrar conexion.php ***
+// Asumiendo que index.php está dentro de /Cliente
 include('../conexion.php'); 
 
 // Parámetros de filtrado
 $filtroCiudad = isset($_GET['ciudad']) ? $_GET['ciudad'] : '';
+// --- INICIO: Recepción de Fechas ---
+$check_in_filter = isset($_GET['check_in']) ? $_GET['check_in'] : date('Y-m-d'); // Usar hoy como defecto
+$check_out_filter = isset($_GET['check_out']) ? $_GET['check_out'] : date('Y-m-d', strtotime('+1 day')); // Mañana como defecto
+// --- FIN: Recepción de Fechas ---
 
 // Verificar que la conexión sea exitosa
 if ($conn->connect_error) {
+    // Nota: En producción es mejor no mostrar este error directamente al usuario.
     die("Error de conexión, revisa conexion.php");
 }
 
@@ -94,7 +100,7 @@ if ($stmt) {
             padding-top: 80px; /* Espacio para el nav fijo */
         }
         
-        /* --- Barra de Navegación (Nueva) --- */
+        /* --- Barra de Navegación (Original) --- */
         .navbar {
             background-color: #ffffff; 
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -169,7 +175,7 @@ if ($stmt) {
 
         /* --- Estilos del Encabezado Principal (Hero) --- */
         .header {
-            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg'); /* RUTA DE IMAGEN AJUSTADA */
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('../hotel_hero_background.jpg');
             background-size: cover;
             background-position: center;
             color: white;
@@ -208,7 +214,7 @@ if ($stmt) {
             transform: translateX(-50%);
         }
 
-        /* --- Estilos del Filtro de Búsqueda --- */
+        /* --- Estilos del Filtro de Búsqueda (CRÍTICO para la alineación) --- */
         .search-filter {
             background-color: white;
             padding: 25px;
@@ -217,19 +223,47 @@ if ($stmt) {
             margin-bottom: 50px;
             display: flex;
             justify-content: center;
+            flex-wrap: wrap; 
             gap: 20px;
-            align-items: center;
+        }
+        .search-filter form { 
+            display:flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap:20px; 
+            align-items: flex-end; /* SOLUCIÓN DE ALINEACIÓN VERTICAL */
         }
         .search-filter label {
             font-weight: 600;
             color: var(--color-dark);
+            display: block;
+            margin-bottom: 5px;
+            text-align: left;
         }
-        .search-filter select, .search-filter button {
+        .search-filter select, 
+        .search-filter input[type="date"],
+        .search-filter .search-item button { /* Incluye el botón aquí para consistencia de altura */
             padding: 12px 18px;
             border-radius: 5px;
             border: 1px solid #ced4da;
             font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            height: 48px; /* Altura fija para alineación perfecta */
         }
+        
+        .search-filter select,
+        .search-filter input[type="date"] {
+            border: 1px solid #ccc;
+        }
+
+        /* Estilos específicos para el contenedor de la búsqueda */
+        .search-item {
+            min-width: 150px;
+            max-width: 250px;
+        }
+
+        /* Estilos específicos para los botones */
         .search-filter button {
             background-color: #28a745; 
             color: white;
@@ -237,11 +271,28 @@ if ($stmt) {
             border: none;
             transition: background-color 0.2s;
         }
+        #clear-filters-btn {
+            background-color: #ccc !important; 
+            color: #555 !important;
+            border: 1px solid #ccc !important;
+        }
+        #clear-filters-btn:hover {
+            background-color: #bbb !important;
+        }
         .search-filter button:hover {
             background-color: #218838;
         }
-        
-        /* --- Estilos de la Cuadrícula de Hoteles --- */
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 5px;
+            width: 100%;
+            text-align: center;
+            display: none; /* Oculto por defecto */
+        }
+
+        /* --- Estilos de la Cuadrícula de Hoteles (Original) --- */
         .hotel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -278,80 +329,16 @@ if ($stmt) {
             object-fit: cover; 
         }
 
-
-        .hotel-content {
-            padding: 20px;
-            flex-grow: 1; 
-        }
-        
-        .hotel-name {
-            color: var(--color-dark);
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-            border-left: 4px solid var(--color-secondary);
-            padding-left: 10px;
-        }
-        .hotel-details p {
-            margin: 8px 0;
-            color: #555;
-            font-size: 1em;
-            line-height: 1.4;
-        }
-
-        .price-tag {
-            background-color: var(--color-primary);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-weight: 700;
-            font-size: 1.3em;
-            display: inline-block;
-            margin-top: 15px;
-        }
-
-        .btn-reserve {
-            display: block; 
-            margin-top: 20px; 
-            text-align: center; 
-            background-color: var(--color-secondary); 
-            color: var(--color-dark); 
-            padding: 12px; 
-            border-radius: 8px; 
-            text-decoration: none;
-            font-weight: 700;
-            transition: background-color 0.2s;
-        }
-        .btn-reserve:hover {
-            background-color: #e0ac00;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            margin: 50px auto;
-            max-width: 600px;
-        }
-
-        /* --- Footer (Nuevo) --- */
-        .footer {
-            background-color: var(--color-dark);
-            color: #ccc;
-            padding: 30px 20px;
-            margin-top: 50px;
-            text-align: center;
-            font-size: 0.9em;
-        }
-        .footer a {
-            color: var(--color-secondary);
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
+        .hotel-content { padding: 20px; flex-grow: 1; }
+        .hotel-name { color: var(--color-dark); margin-top: 0; margin-bottom: 10px; font-size: 1.8em; border-left: 4px solid var(--color-secondary); padding-left: 10px; }
+        .hotel-details p { margin: 8px 0; color: #555; font-size: 1em; line-height: 1.4; }
+        .price-tag { background-color: var(--color-primary); color: white; padding: 8px 15px; border-radius: 5px; font-weight: 700; font-size: 1.3em; display: inline-block; margin-top: 15px; }
+        .btn-reserve { display: block; margin-top: 20px; text-align: center; background-color: var(--color-secondary); color: var(--color-dark); padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; transition: background-color 0.2s; }
+        .btn-reserve:hover { background-color: #e0ac00; }
+        .no-results { text-align: center; padding: 60px; background-color: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); margin: 50px auto; max-width: 600px; }
+        .footer { background-color: var(--color-dark); color: #ccc; padding: 30px 20px; margin-top: 50px; text-align: center; font-size: 0.9em; }
+        .footer a { color: var(--color-secondary); text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -360,6 +347,12 @@ if ($stmt) {
         <a href="index.php" class="navbar-brand">Hoteles NESL</a>
         
         <div class="navbar-actions">
+
+        <?php if ($is_logged_in): ?>
+        <a href="mis_pedidos.php" class="nav-btn btn-login" style="background:#5cb5c; border-color:#5cb85c;">
+            📦 Mis Pedidos
+        </a>
+    <?php endif; ?>
             
             <div class="cart-icon">
                 <a href="../cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
@@ -368,7 +361,7 @@ if ($stmt) {
             <?php if ($is_logged_in): ?>
                 <span class="user-greeting">Bienvenido, <strong><?php echo $user_name; ?></strong></span>
                 
-                <?php if (strcasecmp($_SESSION['user_role'], 'Administrador') === 0): ?>
+                <?php if (isset($_SESSION['user_role']) && strcasecmp($_SESSION['user_role'], 'Administrador') === 0): ?>
                     <a href="../Admin/index.php" class="nav-btn admin-link">Panel Admin</a>
                 <?php endif; ?>
                 
@@ -389,20 +382,45 @@ if ($stmt) {
     <div class="container">
         
         <div class="search-filter">
-            <form method="GET" action="index.php" style="display:flex; gap:20px; align-items:center;">
-                <label for="ciudad">Busca tu próximo destino:</label>
-                <select name="ciudad" id="ciudad">
-                    <option value="">Todas las Ciudades</option>
-                    <?php foreach ($ciudadesDisponibles as $ciudad): ?>
-                        <option value="<?php echo htmlspecialchars($ciudad); ?>" 
-                            <?php echo ($filtroCiudad === $ciudad) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($ciudad); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <button type="submit">🔍 Buscar Hotel</button>
+            <form method="GET" action="index.php" id="search-form" style="display:flex; flex-wrap: wrap; justify-content: center; gap:20px;">
+                
+                <div class="search-item">
+                    <label for="ciudad">Destino:</label>
+                    <select name="ciudad" id="ciudad">
+                        <option value="">Todas</option>
+                        <?php foreach ($ciudadesDisponibles as $ciudad): ?>
+                            <option value="<?php echo htmlspecialchars($ciudad); ?>" 
+                                <?php echo ($filtroCiudad === $ciudad) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($ciudad); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div class="search-item">
+                    <label for="check_in">Check-in:</label>
+                    <input type="date" name="check_in" id="check_in" 
+                           value="<?php echo htmlspecialchars($check_in_filter); ?>">
+                </div>
+                
+                <div class="search-item">
+                    <label for="check_out">Check-out:</label>
+                    <input type="date" name="check_out" id="check_out" 
+                           value="<?php echo htmlspecialchars($check_out_filter); ?>">
+                </div>
+
+                <div class="search-item" style="max-width: 100px;">
+                    <button type="submit">🔍 Buscar</button>
+                </div>
+                
+                <div class="search-item" style="max-width: 100px;">
+                    <button type="button" id="clear-filters-btn">
+                        ❌ Limpiar
+                    </button>
+                </div>
+
+                <div class="error-message" id="date-error"></div>
             </form>
-            <a href="index.php" style="text-decoration: none; color: var(--color-dark); font-weight: 600;">❌ Limpiar Filtro</a>
         </div>
         
         <h2>Ofertas Destacadas</h2>
@@ -411,10 +429,10 @@ if ($stmt) {
             <div class="hotel-grid">
                 <?php foreach ($hoteles as $hotel): ?>
                     <div class="hotel-card">
-                         <div class="hotel-image">
-                             <img src="../images/<?php echo strtolower(str_replace(' ', '_', $hotel['City'])); ?>_hotel.jpg?v=1.0" alt="Foto del Hotel en <?php echo htmlspecialchars($hotel['City']); ?>">
-                         </div>
-                        <div class="hotel-content">
+                           <div class="hotel-image">
+                                <img src="../images/<?php echo strtolower(str_replace(' ', '_', $hotel['City'])); ?>_hotel.jpg?v=1.0" alt="Foto del Hotel en <?php echo htmlspecialchars($hotel['City']); ?>">
+                           </div>
+                         <div class="hotel-content">
                             <h3 class="hotel-name"><?php echo htmlspecialchars($hotel['Name']); ?></h3>
                             <div class="hotel-details">
                                 <p><strong>📍 Ciudad:</strong> <?php echo htmlspecialchars($hotel['City']); ?></p>
@@ -425,7 +443,7 @@ if ($stmt) {
                                 Desde <strong>$<?php echo $hotel['PrecioDesde']; ?></strong>/noche 
                             </div>
                             
-                            <a href="../hotel.php?hotel_id=<?php echo $hotel['Id']; ?>" class="btn-reserve">
+                            <a href="../hotel.php?hotel_id=<?php echo $hotel['Id']; ?>&check_in=<?php echo urlencode($check_in_filter); ?>&check_out=<?php echo urlencode($check_out_filter); ?>" class="btn-reserve">
                                 Ver Habitaciones
                             </a>
                         </div>
@@ -442,6 +460,71 @@ if ($stmt) {
     <footer class="footer">
         <p>&copy; <?php echo date("Y"); ?> <?php echo $nombreCadena; ?>. | <a href="../aviso_legal.php">Aviso Legal</a> | <a href="../contacto.php">Contáctanos</a></p>
     </footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkInInput = document.getElementById('check_in');
+        const checkOutInput = document.getElementById('check_out');
+        const form = document.getElementById('search-form');
+        const errorDiv = document.getElementById('date-error');
+        const clearButton = document.getElementById('clear-filters-btn');
+        const today = new Date().toISOString().split('T')[0];
+
+        // 1. Establecer el mínimo en la fecha de hoy
+        checkInInput.setAttribute('min', today);
+        checkOutInput.setAttribute('min', today);
+
+        function validateDates(event) {
+            const checkInValue = checkInInput.value;
+            const checkOutValue = checkOutInput.value;
+
+            if (!checkInValue || !checkOutValue) {
+                // Si falta alguna fecha, no bloqueamos el formulario, pero mostramos advertencia
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'Recomendamos seleccionar ambas fechas para ver la disponibilidad real.';
+                return true; 
+            }
+
+            const checkIn = new Date(checkInValue);
+            const checkOut = new Date(checkOutValue);
+
+            // 2. Comprobar que Check-out > Check-in
+            if (checkOut <= checkIn) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'La salida debe ser posterior a la entrada.';
+                if (event && event.preventDefault) {
+                    event.preventDefault(); // Detener el envío del formulario
+                }
+                return false;
+            }
+            
+            errorDiv.style.display = 'none';
+            return true;
+        }
+        
+        // --- FUNCIONALIDAD: LIMPIEZA ---
+        clearButton.addEventListener('click', function() {
+            // Redirigir a la página base sin parámetros GET para limpiar completamente la URL
+            window.location.href = 'index.php';
+        });
+
+        // Validar al cambiar las fechas
+        checkInInput.addEventListener('change', validateDates);
+        checkOutInput.addEventListener('change', validateDates);
+        
+        // Validar al enviar el formulario
+        form.addEventListener('submit', validateDates);
+
+        // Inicializar validación (solo si hay valores, para borrar el mensaje de recomendación al cargar)
+        if (checkInInput.value && checkOutInput.value) {
+            validateDates(); 
+        } else {
+            // Mostrar mensaje de recomendación al inicio si no hay fechas
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Recomendamos seleccionar ambas fechas para ver la disponibilidad real.';
+        }
+    });
+</script>
 
 </body>
 </html>

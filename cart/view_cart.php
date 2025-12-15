@@ -1,6 +1,6 @@
 <?php
 session_start();
-// Ajusta la ruta si view_cart.php está en una subcarpeta (ej: cart/)
+// Ajusta la ruta si es necesario. Asumo que view_cart.php está en la carpeta 'cart/'
 include('../conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
@@ -8,7 +8,6 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 $hoteles_en_carrito = [];
 if (!empty($cart)) {
     $ids = array_keys($cart);
-    // Verificar que hay IDs válidos para evitar errores SQL
     if (count($ids) > 0) {
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $sql = "SELECT Id, Name, City, Address FROM Hotels WHERE Id IN ($placeholders)";
@@ -32,6 +31,18 @@ foreach ($cart as $id => $item) {
     $roomsCount = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
     $total += $item['precio'] * $nights * $roomsCount;
 }
+
+// --- FUNCIÓN DE UTILIDAD PARA FORMATO DE FECHA ---
+function format_date_es($date) {
+    if (empty($date)) return 'N/D';
+    try {
+        // Asume que la fecha de la sesión está en formato YYYY-MM-DD
+        return (new DateTime($date))->format('d/m/Y');
+    } catch (Exception $e) {
+        return 'Inválida';
+    }
+}
+// ----------------------------------------------------
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -41,12 +52,11 @@ foreach ($cart as $id => $item) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --color-primary: #a02040; /* Borgoña */
+            --color-primary: #a02040; /* Borgoña/Vino, elegante */
             --color-dark: #343a40;
             --color-light: #f8f9fa;
             --color-text: #495057;
             --color-border: #e9ecef;
-            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
             --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
         }
 
@@ -59,7 +69,7 @@ foreach ($cart as $id => $item) {
         }
 
         .cart-container { 
-            max-width: 1100px; 
+            max-width: 1200px;
             margin: 0 auto; 
             background: #fff; 
             padding: 40px; 
@@ -86,9 +96,7 @@ foreach ($cart as $id => $item) {
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
         /* Tabla */
-        .table-responsive {
-            overflow-x: auto;
-        }
+        .table-responsive { overflow-x: auto; }
         table { 
             width: 100%; 
             border-collapse: separate; 
@@ -101,9 +109,9 @@ foreach ($cart as $id => $item) {
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.85rem;
-            letter-spacing: 0.5px;
             padding: 18px 15px;
             border-bottom: 2px solid var(--color-border);
+            text-align: left;
         }
         td { 
             padding: 20px 15px; 
@@ -112,48 +120,31 @@ foreach ($cart as $id => $item) {
         }
         tr:last-child td { border-bottom: none; }
         
-        /* Elementos de la tabla */
         .hotel-info h3 { margin: 0 0 5px 0; font-size: 1.1rem; color: var(--color-dark); }
         .hotel-info span { font-size: 0.9rem; color: #868e96; }
         
         .price { font-weight: 700; color: var(--color-dark); font-size: 1.1rem; }
-        
-        input[type=number] { 
-            width: 60px; 
-            padding: 8px; 
-            border: 2px solid var(--color-border); 
-            border-radius: 6px; 
-            text-align: center; 
-            font-weight: 600;
-            transition: border-color 0.2s;
-        }
-        input[type=number]:focus { border-color: var(--color-primary); outline: none; }
 
         .btn-remove { 
             color: #dc3545; 
             text-decoration: none; 
             font-size: 0.9rem; 
-            font-weight: 500;
-            transition: opacity 0.2s;
+            font-weight: 500; 
         }
-        .btn-remove:hover { text-decoration: underline; opacity: 0.8; }
+        .btn-remove:hover { text-decoration: underline; }
 
-        /* Pie del carrito */
+        /* Footer */
         .cart-footer {
             background: var(--color-light);
-            padding: 30px;
             border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
             display: flex;
-            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
         }
 
-        .total-price {
-            font-size: 1.5rem;
-            color: var(--color-dark);
-        }
+        .total-price { font-size: 1.5rem; color: var(--color-dark); }
         .total-price strong { color: var(--color-primary); font-size: 2rem; }
 
         .actions {
@@ -162,7 +153,6 @@ foreach ($cart as $id => $item) {
             align-items: center;
         }
 
-        /* Botones */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -172,64 +162,47 @@ foreach ($cart as $id => $item) {
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             border: none;
             font-size: 1rem;
+            transition: all 0.2s;
         }
         .btn-ghost { background: transparent; color: #6c757d; border: 2px solid #dee2e6; }
         .btn-ghost:hover { border-color: #adb5bd; color: var(--color-dark); }
         
-        .btn-update { background: var(--color-dark); color: white; }
-        .btn-update:hover { background: #23272b; transform: translateY(-1px); }
-
         .btn-paypal { 
-            background: #0070ba; 
-            color: white; 
+            background: #0070ba; color: white; 
             box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3);
         }
-        .btn-paypal:hover { 
+        .btn-paypal:hover:not(:disabled) { 
             background: #005ea6; 
-            box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
             transform: translateY(-2px);
         }
         .btn-login { background: var(--color-primary); color: white; }
-
-        .btn-checkout {
-            background:#a02040;
-            color:white;
-            padding:11px 20px;
-            border:none;
-            border-radius:999px;
-            cursor:pointer;
-            font-weight:600;
-            font-size:0.95rem;
-            text-decoration:none;
-            display:inline-block;
-            margin-left:8px;
+        
+        .btn-card {
+            background: #f0f0f0;
+            color: var(--color-dark);
+            border: 2px solid #ddd;
+            padding: 10px 20px;
+            margin-left: 10px;
         }
-        .btn-checkout:hover:not(:disabled) {
-            background:#801933;
+        .btn-card:hover {
+            background: #e0e0e0;
         }
-        .btn-checkout:disabled {
-            opacity:0.5;
-            cursor:not-allowed;
-        }
+        
         @media (max-width: 768px) {
             .cart-footer { flex-direction: column; text-align: center; }
             .actions { flex-direction: column; width: 100%; }
-            .btn { width: 100%; }
-            th { display: none; } /* Ocultar cabeceras en móvil */
-            td { display: block; text-align: right; padding: 10px 0; border-bottom: none; }
-            td::before { content: attr(data-label); float: left; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; color: #868e96; }
-            tr { display: block; background: #fff; border: 1px solid var(--color-border); padding: 20px; margin-bottom: 20px; border-radius: 8px; }
-            .hotel-info { text-align: right; }
+            th { display: none; }
+            td { display: block; text-align: right; padding: 10px 0; }
+            td::before { content: attr(data-label); float: left; font-weight: bold; font-size: 0.8rem; color: #868e96; }
         }
     </style>
 </head>
 <body>
 
 <div class="cart-container">
-    <h1>🛒 Tu Carrito de Reservas</h1>
+    <h1>🛒 Tu Carrito de Reservas (Solo Lectura)</h1>
 
     <?php if (isset($_SESSION['cart_success'])): ?>
         <div class="msg success"><?php echo htmlspecialchars($_SESSION['cart_success']); ?></div>
@@ -241,30 +214,6 @@ foreach ($cart as $id => $item) {
         <?php unset($_SESSION['cart_error']); ?>
     <?php endif; ?>
 
-
-        <?php if (empty($cart)): ?>
-            <p>Tu carrito está vacío. <a href="../Cliente/index.php">Volver a la tienda</a></p>
-        <?php else: ?>
-            <form method="post" action="update_cart.php">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:22%">Hotel</th>
-                        <th style="width:10%">Ciudad</th>
-                        <th style="width:10%">Precio / noche / Habitacion</th>
-                        <th style="width:15%">Fecha de entrada</th>
-                        <th style="width:15%">Fecha de salida</th>
-                        <th style="width:8%">Noches</th>
-                        <th style="width:8%">Habitaciones</th>
-                        <th style="width:10%">Subtotal</th>
-                        <th style="width:5%"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($cart as $id => $item): ?>
-                        <tr>
-                            <td><?php echo isset($hoteles_en_carrito[$id]) ? htmlspecialchars($hoteles_en_carrito[$id]['Name']) : 'Hotel #' . $id; ?></td>
-                            <td><?php echo isset($hoteles_en_carrito[$id]) ? htmlspecialchars($hoteles_en_carrito[$id]['City']) : '-'; ?></td>
     <?php if (empty($cart)): ?>
         <div style="text-align: center; padding: 40px;">
             <p style="font-size: 1.2rem; color: #868e96; margin-bottom: 20px;">Tu carrito está vacío actualmente.</p>
@@ -272,78 +221,98 @@ foreach ($cart as $id => $item) {
         </div>
     <?php else: ?>
 
-        <form method="post" action="update_cart.php">
-            <div class="table-responsive">
-                <table>
-                    <thead>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="35%">Hotel & Fechas</th>
+                        <th width="15%">Precio Noche</th>
+                        <th width="10%">Noches</th>
+                        <th width="10%">Habitaciones</th>
+                        <th width="20%">Subtotal</th>
+                        <th width="10%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($cart as $id => $item): ?>
+                        <?php
+                            $hotelInfo = isset($hoteles_en_carrito[$id]) ? $hoteles_en_carrito[$id] : null;
+                            $nombreHotel = $hotelInfo ? $hotelInfo['Name'] : 'Hotel #' . $id;
+                            $nights     = isset($item['nights']) ? (int)$item['nights'] : 1;
+                            $roomsCount = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
+                            $lineTotal  = $item['precio'] * $nights * $roomsCount;
+                            
+                            // *** APLICACIÓN DEL FORMATO ESPAÑOL ***
+                            $check_in_es = format_date_es($item['check_in'] ?? null);
+                            $check_out_es = format_date_es($item['check_out'] ?? null);
+                            // ***************************************
+                        ?>
                         <tr>
-                            <th width="40%">Hotel & Habitación</th>
-                            <th width="15%">Precio Noche</th>
-                            <th width="10%">Noches</th>
-                            <th width="15%">Habitaciones</th>
-                            <th width="15%">Total</th>
-                            <th width="5%"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($cart as $id => $item): ?>
-                            <?php
-                                $hotelInfo = isset($hoteles_en_carrito[$id]) ? $hoteles_en_carrito[$id] : null;
-                                $nombreHotel = $hotelInfo ? $hotelInfo['Name'] : 'Hotel #' . $id;
-                                $ciudad = $hotelInfo ? $hotelInfo['City'] : '';
-                                
-                                $nights     = isset($item['nights']) ? (int)$item['nights'] : 1;
-                                $roomsCount = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
-                                $lineTotal  = $item['precio'] * $nights * $roomsCount;
-                            ?>
-                            <td class="price">$<?php echo number_format($item['precio'], 2); ?></td>
-                            <td>
-                                <input 
-                                    type="date" 
-                                    name="check_in[<?php echo intval($id); ?>]" 
-                                    value="<?php echo isset($item['check_in']) ? htmlspecialchars($item['check_in']) : ''; ?>" 
-                                    style="width:100%; padding:8px; font-size:14px; box-sizing:border-box"
-                                >
+                            <td data-label="Hotel & Fechas">
+                                <div class="hotel-info">
+                                    <h3><?php echo htmlspecialchars($nombreHotel); ?></h3>
+                                    <span>📅 Entrada: <strong><?php echo htmlspecialchars($check_in_es); ?></strong></span><br>
+                                    <span>📅 Salida: <strong><?php echo htmlspecialchars($check_out_es); ?></strong></span>
+                                    <p style="color:#a02040; margin-top:5px; font-size:0.9em;">
+                                        * Para modificar, debes eliminar y añadir de nuevo.
+                                    </p>
+                                </div>
                             </td>
-                            <td>
-                                <input 
-                                    type="date" 
-                                    name="check_out[<?php echo intval($id); ?>]" 
-                                    value="<?php echo isset($item['check_out']) ? htmlspecialchars($item['check_out']) : ''; ?>" 
-                                    style="width:100%; padding:8px; font-size:14px; box-sizing:border-box"
-                                >
+                            <td data-label="Precio/Noche" class="price">$<?php echo number_format($item['precio'], 2); ?></td>
+                            <td data-label="Noches"><?php echo $nights; ?></td>
+                            
+                            <td data-label="Habitaciones" style="text-align: center;">
+                                <?php echo $roomsCount; ?>
                             </td>
-                            <td>
-                                <span id="nights-<?php echo intval($id); ?>" style="display:block; text-align:center; padding:8px;"><?php echo $nights; ?></span>
-                                <input type="hidden" name="nights[<?php echo intval($id); ?>]" id="nights-hidden-<?php echo intval($id); ?>" value="<?php echo $nights; ?>">
+
+                            <td data-label="Subtotal" class="price subtotal-cell" style="color: var(--color-primary);">$<?php echo number_format($lineTotal, 2); ?></td>
+                            
+                            <td style="text-align: right;">
+                                <a href="remove_from_cart.php?hotel_id=<?php echo intval($id); ?>" 
+                                   class="btn-remove"
+                                   onclick="return confirm('¿Deseas eliminar este hotel del carrito?');">
+                                   🗑️ Eliminar
+                                </a>
                             </td>
-                            <td><?php echo $roomsCount; ?></td>
-                            <td class="price">$<?php echo number_format($lineTotal, 2); ?></td>
-                            <td><a href="remove_from_cart.php?hotel_id=<?php echo intval($id); ?>" onclick="return confirm('¿Deseas eliminar este elemento del carrito?');" style="color:#dc3545; text-decoration:none; font-weight:600; cursor:pointer;">Eliminar</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center">
-                <div>
-                    <a href="../Cliente/index.php" class="btn btn-ghost">← Seguir comprando</a>
+        </div>
+
+        <div class="cart-footer">
+            <div>
+                <a href="../Cliente/index.php" class="btn btn-ghost">← Seguir Buscando</a>
+            </div>
+            
+            <div class="actions">
+                <div class="total-price">
+                    Total: <strong id="grand-total-display">$<?php echo number_format($total, 2); ?></strong>
                 </div>
 
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <form action="https://www.sandbox.paypal.com/es/cgi-bin/webscr" method="post">
-                        <input type="hidden" name="cmd" value="_xclick">
-                        <input type="hidden" name="business" value="sb-u5grq48018566@business.example.com">
-                        <input type="hidden" name="currency_code" value="EUR">
-                        <input type="hidden" name="item_name" value="Reserva Hoteles NESL - Compra Múltiple">
-                        <input type="hidden" name="amount" value="<?php echo $total; ?>">
-                        
-                        <input type="hidden" name="return" value="http://localhost/hoteles/cart/checkout.php">
-                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/cart/pago_cancelado.php">
-                        
-                        <button type="submit" class="btn btn-paypal">
-                            Pagar con PayPal 💳
-                        </button>
-                    </form>
+                    <a href="#payment-modal" id="pay-card-btn" class="btn btn-card">
+                        💳 Pagar con Tarjeta
+                    </a>
+                    
+                    <form action="https://www.sandbox.paypal.com/es/cgi-bin/webscr" method="post" id="paypal-form">
+    <input type="hidden" name="cmd" value="_xclick">
+    <input type="hidden" name="business" value="sb-u5grq48018566@business.example.com">
+    <input type="hidden" name="currency_code" value="EUR">
+    <input type="hidden" name="item_name" value="Reserva Hoteles NESL - Compra Múltiple">
+    
+    <input type="hidden" name="amount" id="paypal-amount" value="<?php echo number_format($total, 2, '.', ''); ?>">
+    
+    <input type="hidden" name="return" value="http://localhost/hoteles/cart/checkout.php?status=success_paypal">
+    
+    <input type="hidden" name="custom" value="<?php echo $_SESSION['user_id'] ?? 0; ?>">
+
+    <input type="hidden" name="cancel_return" value="http://localhost/hoteles/cart/pago_cancelado.php">
+    
+    <button type="submit" id="checkout-btn" class="btn btn-paypal">
+        Pagar con PayPal 💳
+    </button>
+</form>
 
                 <?php else: ?>
                     <a href="../login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">
@@ -351,107 +320,90 @@ foreach ($cart as $id => $item) {
                     </a>
                 <?php endif; ?>
             </div>
-            </form>
-        <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</div>
+
+<div id="payment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000;">
+    <div style="max-width:450px; margin:10% auto; background:white; padding:30px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5); position:relative;">
+        <h2 style="margin-top:0; color:var(--color-primary);">Detalles de la Tarjeta</h2>
+        <p style="font-weight:bold;">Total a pagar: <span style="color:var(--color-primary);">$<?php echo number_format($total, 2); ?></span></p>
+        
+        <form action="checkout.php" method="GET">
+            <input type="hidden" name="payment_method" value="card">
+            
+            <div class="field" style="margin-bottom:15px;">
+                <label for="card_number" style="display:block; margin-bottom:5px;">Número de Tarjeta</label>
+                <input type="text" id="card_number" required placeholder="XXXX XXXX XXXX XXXX" maxlength="16" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+            </div>
+            
+            <div style="display:flex; gap:15px;">
+                <div class="field" style="width:50%;">
+                    <label for="expiry" style="display:block; margin-bottom:5px;">Vencimiento (MM/AA)</label>
+                    <input type="text" id="expiry" required placeholder="MM/AA" maxlength="5" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                </div>
+                <div class="field" style="width:50%;">
+                    <label for="cvv" style="display:block; margin-bottom:5px;">CVV</label>
+                    <input type="text" id="cvv" required placeholder="XXX" maxlength="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                </div>
+            </div>
+            
+            <div class="field" style="margin-top:15px;">
+                <label for="card_name" style="display:block; margin-bottom:5px;">Nombre en la Tarjeta</label>
+                <input type="text" id="card_name" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+            </div>
+            
+            <button type="submit" class="btn" style="background:var(--color-primary); color:white; width:100%; margin-top:20px;">
+                Confirmar Pago ($<?php echo number_format($total, 2); ?>)
+            </button>
+            <button type="button" id="close-modal-btn" style="background:none; border:none; color:#999; width:100%; margin-top:10px; cursor:pointer;">
+                Cancelar
+            </button>
+        </form>
     </div>
-    <script>
-        function updateNights(element, hotelId) {
-            const row = element.closest('tr');
-            const checkInInput = row.querySelector('input[name="check_in[' + hotelId + ']"]');
-            const checkOutInput = row.querySelector('input[name="check_out[' + hotelId + ']"]');
-            const nightsSpan = row.querySelector('#nights-' + hotelId);
-            const nightsHidden = row.querySelector('#nights-hidden-' + hotelId);
+</div>
 
-            if (checkInInput.value && checkOutInput.value) {
-                const checkIn = new Date(checkInInput.value);
-                const checkOut = new Date(checkOutInput.value);
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const payCardBtn = document.getElementById('pay-card-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const paymentModal = document.getElementById('payment-modal');
 
-                if (checkOut <= checkIn) {
-                    nightsSpan.textContent = 'Salida debe ser posterior a entrada';
-                    nightsSpan.style.color = '#dc3545';
-                    document.getElementById('checkout-btn').disabled = true;
-                    return;
-                }
-
-                const diffTime = checkOut - checkIn;
-                const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (nights > 0) {
-                    nightsSpan.textContent = nights;
-                    nightsSpan.style.color = 'inherit';
-                    nightsHidden.value = nights;
-                    updateSubtotal(row, nights);
-                } else {
-                    nightsSpan.textContent = 'Inválido';
-                    nightsSpan.style.color = '#dc3545';
-                    document.getElementById('checkout-btn').disabled = true;
-                }
+        if (payCardBtn) {
+            // Mostrar modal al hacer clic en Pagar con Tarjeta
+            payCardBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                paymentModal.style.display = 'block';
+            });
+        }
+        
+        // Ocultar modal al hacer clic en Cancelar
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', function() {
+                paymentModal.style.display = 'none';
+            });
+        }
+        
+        // Ocultar modal al hacer clic fuera
+        paymentModal.addEventListener('click', function(e) {
+            if (e.target === paymentModal) {
+                paymentModal.style.display = 'none';
             }
-        }
-
-        function updateSubtotal(row, nights) {
-            const priceCells = row.querySelectorAll('.price');
-            const priceText = priceCells[0].textContent.replace('$', '').trim();
-            const price = parseFloat(priceText);
-            
-            const nightsSpan = row.querySelector('[id^="nights-"]');
-            const roomsCell = nightsSpan.closest('td').nextElementSibling;
-            const rooms = parseInt(roomsCell.textContent);
-            
-            const subtotal = price * nights * rooms;
-            priceCells[1].textContent = '$' + subtotal.toFixed(2);
-            
-            updateTotalPrice();
-        }
-
-        function updateTotalPrice() {
-            const rows = document.querySelectorAll('tbody tr');
-            let totalPrice = 0;
-
-            rows.forEach(row => {
-                const priceCells = row.querySelectorAll('.price');
-                const subtotalText = priceCells[1].textContent.replace('$', '').trim();
-                const subtotal = parseFloat(subtotalText) || 0;
-                totalPrice += subtotal;
-            });
-
-            const totalSpan = document.querySelector('.actions strong');
-            if (totalSpan) {
-                totalSpan.textContent = '$' + totalPrice.toFixed(2);
-            }
-
-            checkCheckoutButtonStatus();
-        }
-
-        function checkCheckoutButtonStatus() {
-            const nightsSpans = document.querySelectorAll('[id^="nights-"]');
-            let hasErrors = false;
-
-            nightsSpans.forEach(span => {
-                const text = span.textContent.trim();
-                if (text.includes('Salida') || text.includes('Inválido')) {
-                    hasErrors = true;
-                }
-            });
-
-            document.getElementById('checkout-btn').disabled = hasErrors;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInputs = document.querySelectorAll('input[type="date"]');
-            const today = new Date().toISOString().split('T')[0];
-            
-            dateInputs.forEach(input => {
-                input.setAttribute('min', today);
-                input.addEventListener('change', function() {
-                    const row = this.closest('tr');
-                    const hotelId = this.name.match(/\d+/)[0];
-                    updateNights(this, hotelId);
-                });
-            });
-
-            checkCheckoutButtonStatus();
         });
-    </script>
+
+        // Simulación de envío del formulario de tarjeta
+        const cardForm = document.querySelector('#payment-modal form');
+        if (cardForm) {
+            cardForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // En un entorno real, aquí se llamaría a una API de pago.
+                
+                // Simulación de éxito: redirigir a checkout.php (que guarda la reserva)
+                window.location.href = 'checkout.php?payment_method=card_successful';
+            });
+        }
+    });
+</script>
+
 </body>
 </html>

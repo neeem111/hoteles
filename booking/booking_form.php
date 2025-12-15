@@ -9,26 +9,33 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$userId    = (int)$_SESSION['user_id'];
-$userName  = $_SESSION['user_name']  ?? '';
-$userEmail = $_SESSION['user_email'] ?? '';
+$userId     = (int)$_SESSION['user_id'];
+$userName   = $_SESSION['user_name']   ?? '';
+$userEmail  = $_SESSION['user_email'] ?? '';
 
 // --- 1. Leer parámetros ---
 $hotel_id     = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
 $room_type_id = isset($_GET['room_type_id']) ? (int)$_GET['room_type_id'] : 0;
 
+// --- NUEVA LÓGICA: RECIBIR FECHAS PRESELECCIONADAS DE hotel.php ---
+$check_in_pre = isset($_GET['check_in']) ? $_GET['check_in'] : null;
+$check_out_pre = isset($_GET['check_out']) ? $_GET['check_out'] : null;
+$price_pre = isset($_GET['price']) ? (float)$_GET['price'] : 0.0; // Recibimos el precio para pre-cargar
+
+// Validación básica de IDs (las fechas se validarán más abajo)
 if ($hotel_id <= 0 || $room_type_id <= 0) {
     header("Location: ../Cliente/index.php?error=Hotel+o+habitacion+no+valido");
     exit;
 }
 
-// --- 2. Cargar datos del hotel ---
+// --- 2. Cargar datos del hotel (consulta simplificada) ---
 $sqlHotel = "SELECT Id, Name, City, Address FROM Hotels WHERE Id = ?";
 $stmtH = $conn->prepare($sqlHotel);
 $stmtH->bind_param("i", $hotel_id);
 $stmtH->execute();
 $resH = $stmtH->get_result();
 $hotel = $resH->fetch_assoc();
+$stmtH->close();
 
 if (!$hotel) {
     header("Location: ../Cliente/index.php?error=Hotel+no+encontrado");
@@ -36,33 +43,38 @@ if (!$hotel) {
 }
 
 // --- 3. Cargar datos del tipo de habitación + comprobar que hay rooms disponibles ---
+// NOTA: Esta consulta debe reflejar la lógica de hotel.php para asegurar que la disponibilidad
+// sea por FECHA y no solo por r.Available=1. Como ya filtramos en hotel.php, aquí nos enfocamos en el precio/tipo.
+
 $sqlTipo = "SELECT 
                 rt.Id,
                 rt.Name,
                 rt.Guests,
-                rt.CostPerNight,
-                COUNT(r.Id) AS AvailableRooms
+                rt.CostPerNight
             FROM RoomType rt
-            INNER JOIN Rooms r ON r.Id_RoomType = rt.Id
-            WHERE r.Id_Hotel = ?
-              AND rt.Id = ?
-              AND r.Available = 1
-            GROUP BY rt.Id, rt.Name, rt.Guests, rt.CostPerNight";
+            WHERE rt.Id = ?";
 
 $stmtT = $conn->prepare($sqlTipo);
-$stmtT->bind_param("ii", $hotel_id, $room_type_id);
+$stmtT->bind_param("i", $room_type_id);
 $stmtT->execute();
 $resT = $stmtT->get_result();
 $tipo = $resT->fetch_assoc();
+$stmtT->close();
 
-if (!$tipo || (int)$tipo['AvailableRooms'] === 0) {
-    header("Location: ../hotel.php?hotel_id=" . $hotel_id . "&error=Sin+habitaciones+disponibles");
+if (!$tipo) {
+    header("Location: ../hotel.php?hotel_id=" . $hotel_id . "&error=Tipo+de+habitacion+no+encontrado");
     exit;
 }
 
+// Sobreescribir CostPerNight si se pasó en la URL, aunque el valor de la BD es el estándar
+$precio_final = $price_pre > 0 ? $price_pre : (float)$tipo['CostPerNight'];
+
+
 // --- 4. Obtener rangos de fechas ya reservadas para este hotel + tipo ---
-// Aquí miramos Reservation + Reservation_Rooms + Rooms.
-// Suponemos que Status='Confirmada' indica reserva activa.
+// **IMPORTANTE**: Modificaremos esta consulta para incluir SOLO los días ocupados, 
+// no todos los rangos, si queremos que la validación JS sea más precisa.
+// Para mantener el código que ya tenías, mantendremos la lista de rangos:
+
 $sqlOcupadas = "
     SELECT 
         res.CheckIn_Date,
@@ -83,14 +95,23 @@ $resOcc = $stmtOcc->get_result();
 
 $rangosOcupados = [];
 while ($row = $resOcc->fetch_assoc()) {
-    $rangosOcupados[] = $row; // ['CheckIn_Date' => '...', 'CheckOut_Date' => '...']
+    // Almacenar los rangos en formato JSON para que JavaScript los lea fácilmente
+    $rangosOcupados[] = [
+        'start' => $row['CheckIn_Date'], 
+        'end' => $row['CheckOut_Date']
+    ];
 }
+$stmtOcc->close();
+
+// Convertir a JSON para pasar a JavaScript
+$rangosOcupados_json = json_encode($rangosOcupados);
+
 
 // Fechas mínimas para el datepicker
 $hoy     = (new DateTime())->format('Y-m-d');
 $manana  = (new DateTime('+1 day'))->format('Y-m-d');
 
-// Mensajes del carrito o validaciones (por si luego los usamos)
+// Mensajes del carrito o validaciones
 $cartError   = $_SESSION['cart_error']   ?? '';
 $cartSuccess = $_SESSION['cart_success'] ?? '';
 unset($_SESSION['cart_error'], $_SESSION['cart_success']);
@@ -102,6 +123,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
     <title>Seleccionar fechas - <?php echo htmlspecialchars($hotel['Name']); ?></title>
     <link rel="stylesheet" href="../styleCarlos.css">
     <style>
+        /* [Estilos CSS: Se mantienen los tuyos, omitidos por brevedad, pero incluyendo .error-message] */
         body {
             background-color:#f8f9fa;
             font-family: Arial, sans-serif;
@@ -259,13 +281,23 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
             font-size:0.85rem;
             color:#777;
         }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .disabled-btn {
+            background:#ccc !important;
+            cursor: not-allowed !important;
+        }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
     <div class="layout">
-        <!-- Columna izquierda: info hotel + tipo -->
         <div class="card">
             <div class="hotel-header">
                 <h1><?php echo htmlspecialchars($hotel['Name']); ?></h1>
@@ -285,7 +317,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
             </div>
             <div style="margin-top:10px;">
                 <span class="price-highlight">
-                    <?php echo number_format($tipo['CostPerNight'], 2); ?> €/noche
+                    <?php echo number_format($precio_final, 2); ?> €/noche
                 </span>
                 <div class="price-note">
                     Precio por habitación y por noche.
@@ -295,7 +327,6 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
             <div class="badges">
                 <span class="badge">Usuario: <?php echo htmlspecialchars($userName); ?></span>
                 <span class="badge">Email: <?php echo htmlspecialchars($userEmail); ?></span>
-
             </div>
 
             <hr style="border:none;border-top:1px solid #eee;margin:15px 0;">
@@ -307,7 +338,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 <p class="hint">Evita seleccionar fechas que se solapen con estos rangos:</p>
                 <ul class="occupied-list">
                     <?php foreach ($rangosOcupados as $r): ?>
-                        <li>Del <?php echo htmlspecialchars($r['CheckIn_Date']); ?> al <?php echo htmlspecialchars($r['CheckOut_Date']); ?></li>
+                        <li>Del <?php echo htmlspecialchars($r['start']); ?> al <?php echo htmlspecialchars($r['end']); ?></li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -315,7 +346,6 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
             <a href="../hotel.php?hotel_id=<?php echo (int)$hotel['Id']; ?>" class="back-link">← Volver al hotel</a>
         </div>
 
-        <!-- Columna derecha: formulario -->
         <div class="card">
             <p class="section-title">Selecciona fechas y añade al carrito</p>
 
@@ -327,32 +357,48 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 <div class="msg-ok"><?php echo htmlspecialchars($cartSuccess); ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="../cart/add_reservation.php">
+            <form method="POST" action="../cart/add_reservation.php" id="booking-form">
                 <input type="hidden" name="hotel_id" value="<?php echo (int)$hotel['Id']; ?>">
                 <input type="hidden" name="room_type_id" value="<?php echo (int)$tipo['Id']; ?>">
-                <input type="hidden" name="price_per_night" value="<?php echo (float)$tipo['CostPerNight']; ?>">
+                <input type="hidden" name="price_per_night" value="<?php echo $precio_final; ?>">
 
                 <div class="field">
                     <label for="check_in">Fecha de entrada</label>
-                    <input type="date" name="check_in" id="check_in" required min="<?php echo $hoy; ?>">
+                    <input type="date" 
+                           name="check_in" 
+                           id="check_in" 
+                           required 
+                           min="<?php echo $hoy; ?>"
+                           value="<?php echo htmlspecialchars($check_in_pre); ?>"
+                           >
                 </div>
 
                 <div class="field">
                     <label for="check_out">Fecha de salida</label>
-                    <input type="date" name="check_out" id="check_out" required min="<?php echo $manana; ?>">
+                    <input type="date" 
+                           name="check_out" 
+                           id="check_out" 
+                           required 
+                           min="<?php echo $manana; ?>"
+                           value="<?php echo htmlspecialchars($check_out_pre); ?>"
+                           >
+                </div>
+                
+                <div class="error-message" id="date-overlap-error" style="display:none;">
+                    ⚠️ El rango de fechas seleccionado se solapa con una reserva existente.
                 </div>
 
                 <div class="field">
-                  <label for="num_rooms">Número de habitaciones</label>
-                  <input 
-                      type="number" 
-                      name="num_rooms" 
-                      id="num_rooms" 
-                      min="1" 
-                      value="1"
-                      required
-                  >
-              </div>
+                    <label for="num_rooms">Número de habitaciones</label>
+                    <input 
+                        type="number" 
+                        name="num_rooms" 
+                        id="num_rooms" 
+                        min="1" 
+                        value="1"
+                        required
+                    >
+                </div>
 
                 <div class="field">
                     <label for="notes">Notas para el hotel (opcional)</label>
@@ -360,17 +406,86 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 </div>
 
                 <p class="hint">
-                    Esta acción solo añade la habitación a tu carrito.  
+                    Esta acción solo añade la habitación a tu carrito.   
                     La reserva definitiva se realizará más adelante, al confirmar el carrito.
                 </p>
 
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary" id="add-to-cart-btn">
                     Añadir al carrito
                 </button>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+    // Pasar los rangos de reserva ocupados a JavaScript
+    const occupiedRanges = <?php echo $rangosOcupados_json; ?>;
+    const form = document.getElementById('booking-form');
+    const checkInInput = document.getElementById('check_in');
+    const checkOutInput = document.getElementById('check_out');
+    const errorDiv = document.getElementById('date-overlap-error');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+    // Función auxiliar para convertir fecha YYYY-MM-DD a objeto Date
+    function parseDate(dateString) {
+        const parts = dateString.split('-');
+        // new Date(year, monthIndex, day) - monthIndex es 0-based
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+
+    // Función CRÍTICA: Verificar si el rango solicitado solapa con un rango ocupado
+    function checkOverlap() {
+        errorDiv.style.display = 'none';
+        addToCartBtn.classList.remove('disabled-btn');
+        addToCartBtn.disabled = false;
+
+        const checkInValue = checkInInput.value;
+        const checkOutValue = checkOutInput.value;
+
+        if (!checkInValue || !checkOutValue) {
+            // No podemos validar sin fechas, pero permitimos el envío (la validación PHP se encargará)
+            return;
+        }
+
+        const newStart = parseDate(checkInValue);
+        const newEnd = parseDate(checkOutValue);
+
+        // 1. Validación de orden de fechas (Check-out debe ser después de Check-in)
+        if (newEnd <= newStart) {
+            errorDiv.textContent = 'La salida debe ser posterior a la entrada.';
+            errorDiv.style.display = 'block';
+            addToCartBtn.classList.add('disabled-btn');
+            addToCartBtn.disabled = true;
+            return;
+        }
+
+        // 2. Validación de solapamiento con reservas existentes
+        for (const range of occupiedRanges) {
+            const occupiedStart = parseDate(range.start);
+            const occupiedEnd = parseDate(range.end);
+
+            // Criterio de solapamiento:
+            // Ocupado si (nueva entrada < fecha fin ocupada) Y (nueva salida > fecha inicio ocupada)
+            if (newStart < occupiedEnd && newEnd > occupiedStart) {
+                errorDiv.textContent = '⚠️ El rango de fechas seleccionado se solapa con una reserva existente. Por favor, selecciona otras fechas.';
+                errorDiv.style.display = 'block';
+                addToCartBtn.classList.add('disabled-btn');
+                addToCartBtn.disabled = true;
+                return;
+            }
+        }
+    }
+    
+    // Asignar el listener a los cambios de fecha
+    checkInInput.addEventListener('change', checkOverlap);
+    checkOutInput.addEventListener('change', checkOverlap);
+
+    // Ejecutar al cargar la página si las fechas ya están pre-rellenas
+    if (checkInInput.value && checkOutInput.value) {
+        checkOverlap();
+    }
+</script>
 
 </body>
 </html>

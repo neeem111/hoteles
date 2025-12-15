@@ -11,7 +11,7 @@ $user_id = $_SESSION['user_id'];
 
 // 1. Obtener datos de la factura, usuario y hotel
 $sql = "SELECT i.*, u.Name as UserName, u.Address as UserAddress, u.Email as UserEmail, 
-               h.Name as HotelName, h.Address as HotelAddress, h.City as HotelCity
+                h.Name as HotelName, h.Address as HotelAddress, h.City as HotelCity
         FROM Invoices i
         JOIN Users u ON i.Id_User = u.Id
         JOIN Reservation r ON i.Id_Reservation = r.Id
@@ -126,17 +126,49 @@ $itemsResult = $stmtItems->get_result();
         }
         .btn-print { background: #a02040; }
         
-        @media print {
-            body { background: white; margin: 0; padding: 0; }
-            .invoice-box { border: none; box-shadow: none; width: 100%; max-width: 100%; }
-            .actions { display: none; }
+        /* === CORRECCIÓN CRÍTICA DE IMPRESIÓN === */
+        @page {
+            /* Forzar la orientación horizontal (Landscape) y reducir márgenes */
+            size: A4 landscape;
+            margin: 10mm; 
         }
+
+        @media print {
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                font-size: 10pt; /* Fuente más pequeña para que quepa más */
+            }
+            
+            .invoice-box { 
+                border: none; 
+                box-shadow: none; 
+                /* Asegura que use todo el espacio horizontal del A4 Landscape */
+                width: 100% !important; 
+                max-width: none !important; 
+                padding: 0 !important;
+            }
+            
+            .invoice-header {
+                justify-content: space-between;
+            }
+            
+            .invoice-title {
+                font-size: 30px; /* Reducir el título para evitar que se corte */
+            }
+            
+            .actions { 
+                display: none; /* Ocultar botones */
+            }
+        }
+        /* ======================================= */
     </style>
 </head>
 <body>
 
     <div class="actions">
-        <a href="index.php" class="btn">← Volver</a>
+       
         <button onclick="window.print()" class="btn btn-print">🖨️ Descargar PDF / Imprimir</button>
     </div>
 
@@ -161,9 +193,9 @@ $itemsResult = $stmtItems->get_result();
 
         <div class="info-group">
             <div class="info-label">FACTURAR A:</div>
-            <strong><?php echo $invoice['UserName']; ?></strong><br>
-            <?php echo $invoice['UserAddress']; ?><br>
-            <?php echo $invoice['UserEmail']; ?>
+            <strong><?php echo htmlspecialchars($invoice['UserName']); ?></strong><br>
+            <?php echo htmlspecialchars($invoice['UserAddress']); ?><br>
+            <?php echo htmlspecialchars($invoice['UserEmail']); ?>
         </div>
 
         <table>
@@ -176,7 +208,9 @@ $itemsResult = $stmtItems->get_result();
                 </tr>
             </thead>
             <tbody>
-                <?php while($item = $itemsResult->fetch_assoc()): ?>
+                <?php 
+                $itemsResult->data_seek(0); // Asegurarse de empezar desde el principio
+                while($item = $itemsResult->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo htmlspecialchars($item['Description']); ?></td>
                     <td class="text-right"><?php echo number_format($item['UnitPrice'], 2); ?> €</td>

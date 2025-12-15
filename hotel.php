@@ -1,5 +1,6 @@
 <?php
 session_start();
+// La ruta de conexión es correcta
 include('conexion.php'); 
 
 // 1. Obtener y validar el ID del hotel
@@ -10,43 +11,74 @@ if ($hotel_id <= 0) {
     exit();
 }
 
-// --- FUNCIONES PARA OBTENER DATOS DE LA BBDD ---
+// 2. OBTENER LAS FECHAS DEL INDEX
+$check_in  = $_GET['check_in'] ?? null;
+$check_out = $_GET['check_out'] ?? null;
 
-// Función para obtener los detalles del hotel
+// Validar que se hayan recibido fechas y que sean válidas (Check-out > Check-in)
+if (!$check_in || !$check_out || $check_in >= $check_out) {
+    // En caso de fechas inválidas, redirigimos al index
+    header("Location: Cliente/index.php?error=Selecciona+fechas+validas");
+    exit();
+}
+
+// --- FUNCIONES PARA OBTENER DATOS DE LA BBDD (Omitidas por brevedad, no cambian) ---
+
 function obtenerDetallesHotel($conn, $id) {
     $sql = "SELECT Id, Name, City, Address FROM Hotels WHERE Id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $resultado = $stmt->get_result();
-    return $resultado->fetch_assoc();
+    $hotel = $resultado->fetch_assoc();
+    $stmt->close();
+    return $hotel;
 }
 
 /**
- * Función para obtener SOLO los tipos de habitación
- * que tienen habitaciones DISPONIBLES en este hotel,
- * usando el precio real de RoomType.CostPerNight
+ * Función para obtener los tipos de habitación disponibles
+ * para el rango de fechas SOLICITADO.
  */
-function obtenerTiposHabitacionDisponiblesPorHotel($conn, $hotelId) {
+function obtenerTiposHabitacionDisponiblesPorHotelYFecha($conn, $hotelId, $checkIn, $checkOut) {
+    
+    // El SQL tiene 3 placeholders: HotelId, CheckOut, CheckIn.
     $sql = "SELECT 
-                rt.Id,
+                rt.Id AS Id_RoomType,
                 rt.Name,
                 rt.Guests,
                 rt.CostPerNight,
-                COUNT(r.Id) AS AvailableRooms
+                (
+                    SELECT COUNT(R.Id)
+                    FROM Rooms R
+                    WHERE R.Id_RoomType = rt.Id
+                      AND R.Id_Hotel = ?             /* <-- Placeholder 1: Filtro por Hotel */
+                      AND R.Available = 1            /* <-- Habitación Operativa */
+                      AND R.Id NOT IN (
+                            SELECT rr.Id_Room
+                            FROM Reservation_Rooms rr
+                            JOIN Reservation res ON rr.Id_Reservation = res.Id
+                            WHERE res.CheckIn_Date < ? /* <-- Placeholder 2: CheckOut */
+                              AND res.CheckOut_Date > ? /* <-- Placeholder 3: CheckIn */
+                              AND res.Status = 'Confirmada'
+                      )
+                ) AS AvailableRooms
             FROM RoomType rt
-            INNER JOIN Rooms r ON r.Id_RoomType = rt.Id
-            WHERE r.Id_Hotel = ?
-              AND r.Available = 1
-            GROUP BY rt.Id, rt.Name, rt.Guests, rt.CostPerNight
+            HAVING AvailableRooms > 0
             ORDER BY rt.CostPerNight ASC";
 
+
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $hotelId);
+    
+    // BINDEO: Orden crítico (1: i, 2: s, 3: s)
+    $stmt->bind_param("iss", $hotelId, $checkOut, $checkIn);
+    
     $stmt->execute();
     $resultado = $stmt->get_result();
-    return $resultado->fetch_all(MYSQLI_ASSOC);
+    $tipos = $resultado->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $tipos;
 }
+
 
 // --- EJECUCIÓN ---
 
@@ -57,16 +89,24 @@ if (!$hotel) {
     exit();
 }
 
-// Ahora obtenemos SOLO tipos con habitaciones disponibles y su precio real
-$tiposHabitacion = obtenerTiposHabitacionDisponiblesPorHotel($conn, $hotel_id);
+// *** APLICACIÓN DEL FORMATO ESPAÑOL ***
+try {
+    $check_in_es = (new DateTime($check_in))->format('d/m/Y');
+    $check_out_es = (new DateTime($check_out))->format('d/m/Y');
+} catch (Exception $e) {
+    // Si la conversión falla (por seguridad, aunque la validación anterior debería evitarlo)
+    $check_in_es = $check_in;
+    $check_out_es = $check_out;
+}
+
+$tiposHabitacion = obtenerTiposHabitacionDisponiblesPorHotelYFecha($conn, $hotel_id, $check_in, $check_out);
 
 $ciudad = $hotel['City'];
 
 $habitacionesDisponibles = [];
 
-// Aplicar la lógica de precios: AHORA usamos CostPerNight de la BD
+// Aplicar la lógica de precios y reformatear
 foreach ($tiposHabitacion as $tipo) {
-    // Precio directamente desde RoomType.CostPerNight
     $tipo['PrecioNoche'] = number_format($tipo['CostPerNight'], 2, '.', '');
     $habitacionesDisponibles[] = $tipo;
 }
@@ -84,6 +124,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
     <title>Reserva en <?php echo htmlspecialchars($hotel['Name']); ?></title>
     <link rel="stylesheet" href="../styleCarlos.css">
     <style>
+        /* ... (Estilos CSS) ... */
         :root {
             --color-primary: #a02040;
             --color-secondary: #ffc107;
@@ -166,6 +207,21 @@ $nombreCadena = "Hoteles Nueva España S.L.";
         .btn-select:hover {
             background-color: #801933;
         }
+        /* Estilo para mostrar las fechas de la reserva */
+        .date-filter-info {
+            background: #f0f0f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            color: var(--color-dark);
+            border: 1px solid #e0e0e5;
+        }
+        .date-filter-info strong {
+            color: var(--color-primary);
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -182,24 +238,36 @@ $nombreCadena = "Hoteles Nueva España S.L.";
             <h1><?php echo htmlspecialchars($hotel['Name']); ?></h1>
             <p class="hotel-info">📍 <strong><?php echo htmlspecialchars($ciudad); ?></strong> | Dirección: <?php echo htmlspecialchars($hotel['Address']); ?></p>
         </div>
+        
+        <div class="date-filter-info">
+            Buscando habitaciones entre <strong><?php echo htmlspecialchars($check_in_es); ?></strong> y <strong><?php echo htmlspecialchars($check_out_es); ?></strong>.
+        </div>
 
         <h2>Tipos de Habitación Disponibles</h2>
 
         <ul class="room-listing">
             <?php if (count($habitacionesDisponibles) === 0): ?>
-                <li>No hay habitaciones disponibles en este hotel ahora mismo.</li>
+                <li>
+                    <div style="padding: 20px; text-align: center; color: #dc3545; font-weight: bold; background: #fff3f3; border-radius: 8px;">
+                        ⚠️ Lo sentimos, no hay habitaciones disponibles para el rango de fechas seleccionado.
+                        <p style="font-size:0.9em; font-weight:normal; margin-top:10px;">
+                            Por favor, vuelve al listado de hoteles para seleccionar otras fechas.
+                        </p>
+                    </div>
+                </li>
             <?php else: ?>
                 <?php foreach ($habitacionesDisponibles as $room): ?>
                 <li class="room-card">
                     <div class="room-details">
                         <h3><?php echo htmlspecialchars($room['Name']); ?></h3>
                         <p>Máximo de Huéspedes: <strong><?php echo htmlspecialchars($room['Guests']); ?></strong></p>
-                        <!-- Ya no mostramos ID ni número de disponibles -->
+                        <p style="color: var(--color-dark);">Habitaciones libres: <strong><?php echo (int)$room['AvailableRooms']; ?></strong></p>
                     </div>
                     <div class="room-price">
                         <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
                         <p style="color: #999;">Precio por noche</p>
-                        <a href="booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id']; ?>" class="btn-select">
+                        
+                        <a href="booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id_RoomType']; ?>&check_in=<?php echo urlencode($check_in); ?>&check_out=<?php echo urlencode($check_out); ?>&price=<?php echo $room['PrecioNoche']; ?>" class="btn-select">
                             Seleccionar
                         </a>
                     </div>
