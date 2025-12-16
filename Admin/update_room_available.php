@@ -44,3 +44,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['room_id'], $_POST['av
 header("Location: gestion_habitaciones.php");
 exit();
 ?>
+s
