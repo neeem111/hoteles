@@ -90,13 +90,24 @@ CREATE TABLE InvoiceItems (
     FOREIGN KEY (Id_Invoice) REFERENCES Invoices(Id)
 );
 
-CREATE TABLE IF NOT EXISTS login_history (
+CREATE TABLE login_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    login_time DATETIME DEFAULT CURRENT_TIMESTAMP,
-    ip_address VARCHAR(45),
-    success BOOLEAN NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(Id) ON DELETE CASCADE
+    user_name VARCHAR(100) NOT NULL,
+    login_time DATETIME NOT NULL,
+    logout_time DATETIME DEFAULT NULL,
+    duration VARCHAR(50) DEFAULT 'Sesión activa',
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE ContactMessages (
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    Subject VARCHAR(255),
+    Message TEXT NOT NULL,
+    SubmissionDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Is_Read BOOLEAN DEFAULT 0
 );
 -----------------------------------------------------------------------------------------DATOS
 
