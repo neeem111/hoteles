@@ -397,6 +397,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                         min="1" 
                         value="1"
                         required
+                        readonly
                     >
                 </div>
 
