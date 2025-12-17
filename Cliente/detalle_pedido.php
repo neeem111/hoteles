@@ -251,12 +251,10 @@ $nombreCadena = "Hoteles Nueva España S.L.";
             <hr style="margin: 30px 0;">
 
             <?php if ($invoice_id): ?>
-                <a href="../[nombre_del_archivo_factura].php?id=<?php echo $invoice_id; ?>" class="btn btn-primary" target="_blank">
+                <a href="../ver_factura.php?id=<?php echo $invoice_id; ?>" class="btn btn-primary" target="_blank">
                     📄 Descargar Factura (<?php echo htmlspecialchars($invoice_number); ?>)
                 </a>
-                <p style="font-size:0.9em; color:#777; margin-top:10px;">
-                    * Recuerda actualizar `[nombre_del_archivo_factura].php` con la ruta y nombre de tu archivo de descarga de facturas.
-                </p>
+                
             <?php else: ?>
                 <p style="color: #dc3545; font-weight: bold;">Factura no encontrada para esta reserva.</p>
             <?php endif; ?>
