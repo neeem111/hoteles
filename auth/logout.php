@@ -36,5 +36,5 @@ if (isset($_SESSION['login_log_id'])) {
 session_unset();
 session_destroy();
 
-header("Location: auth/login.php");
+header("Location: login.php");
 exit();
