@@ -17,14 +17,14 @@ setInterval(() => {
     // se considera que no hay pestañas activas
     if (Date.now() - lastActive > 40000) {
         // No hay pestañas activas
-        fetch("auth/logout.php")
+        fetch("../../auth/logout.php")
             .then(() => {
-                window.location.href = "auth/login.php";
+                window.location.href = "../../auth/login.php";
             });
         return;
     }
 
     // Si esta pestaña está activa, enviamos ping a PHP para mantener sesión
-    fetch("session_ping.php", { cache: "no-store" });
+    fetch("../../Config/session_ping.php", { cache: "no-store" });
 
 }, PING_INTERVAL);
