@@ -6,9 +6,9 @@ $ciudadesDisponibles = ['Valencia', 'Santander', 'Toledo'];
 
 // --- LÓGICA DE PRECIOS POR CIUDAD ---
 $tarifasBase = [
-    'Toledo' => 20,
-    'Valencia' => 30,
-    'Santander' => 25
+    'Toledo' => 85,
+    'Valencia' => 85,
+    'Santander' => 85
 ];
 $incrementoPorCiudad = [
     'Toledo' => 15,
