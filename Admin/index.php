@@ -59,12 +59,9 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             text-align: center;
             transition: transform 0.3s;
-            
-            /* --- INICIO CORRECCIÓN TOC --- */
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Distribuye el espacio verticalmente */
-            /* --- FIN CORRECCIÓN TOC --- */
+            justify-content: space-between;
         }
 
         .card {
