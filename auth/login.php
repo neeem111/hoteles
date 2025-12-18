@@ -18,7 +18,7 @@ if (isset($_GET['msg'])) {
 <head>
     <meta charset="UTF-8">
     <title>Iniciar sesión - Mi Tienda</title>
-    <link rel="stylesheet" href="styleCarlos.css">
+    <link rel="stylesheet" href="../styleCarlos.css">
 </head>
 <body>
     <div class="login-card">
@@ -46,8 +46,8 @@ if (isset($_GET['msg'])) {
         </form>
 
         <div class="back-store">
-            <a href="Cliente/register.php">¿No tienes cuenta? Regístrate aquí</a><br>
-            <a href="Cliente/index.php">← Volver a la tienda</a>
+            <a href="../Cliente/register.php">¿No tienes cuenta? Regístrate aquí</a><br>
+            <a href="../Cliente/index.php">← Volver a la tienda</a>
         </div>
 
     </div>

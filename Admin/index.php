@@ -3,7 +3,7 @@ session_start();
 
 // Solo permite acceso a administradores
 if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administrador') !== 0) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 
@@ -52,10 +52,19 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
             padding: 20px;
         }
 
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+            
+            /* --- INICIO CORRECCIÓN TOC --- */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribuye el espacio verticalmente */
+            /* --- FIN CORRECCIÓN TOC --- */
         }
 
         .card {
@@ -98,7 +107,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 
 <div class="header">
     <h1>Bienvenido, <?= $nombre ?></h1>
-    <a href="../logout.php" class="logout-btn">Cerrar Sesión</a>
+    <a href="../auth/logout.php" class="logout-btn">Cerrar Sesión</a>
 </div>
 
 <div class="container">
@@ -106,24 +115,35 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 
     <div class="cards">
 
-        <div class="card">
-            <h3>Administrar Usuarios</h3>
-            <p>Registrar nuevos usuarios para la plataforma.</p>
-            <a href="register.php">Ir a Registro</a>
-        </div>
+    <div class="card">
+        <h3>Administrar Usuarios</h3>
+        <p>Registrar nuevos usuarios para la plataforma.</p>
+        <a href="register.php">Ir a Registro</a>
+    </div>
 
-        <div class="card">
-            <h3>Ver Tienda</h3>
-            <p>Explora la vista del cliente como un usuario regular.</p>
-            <a href="../Cliente/index.php">Ir a la Tienda</a>
-        </div>
+    <div class="card">
+        <h3>Ver Tienda</h3>
+        <p>Explora la vista del cliente como un usuario regular.</p>
+        <a href="../Cliente/index.php">Ir a la Tienda</a>
+    </div>
 
-        <div class="card">
-            <h3>Registros de Sesión</h3>
-            <p>Consulta los inicios y cierres de sesión de todos los usuarios.</p>
-            <a href="logs.php">Ver Logs</a>
-        </div>
+    <div class="card">
+        <h3>Registros de Sesión</h3>
+        <p>Consulta los inicios y cierres de sesión de todos los usuarios.</p>
+        <a href="logs.php">Ver Logs</a>
+    </div>
+    
+    <div class="card">
+        <h3>Gestión de Reservas</h3>
+        <p>Ver y modificar el estado de todas las reservas de los clientes.</p>
+        <a href="reservas.php">Administrar Reservas</a>
+    </div>
 
+    <div class="card">
+        <h3>Gestión de Habitaciones</h3>
+        <p>Marcar habitaciones como operativas (disponibles) o no operativas (mantenimiento).</p>
+        <a href="gestion_habitaciones.php">Administrar Habitaciones</a>
+    </div>
     </div>
 </div>
 

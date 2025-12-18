@@ -1,115 +1,191 @@
 <?php
 session_start();
-include('../conexion.php');
+include('../Config/conexion.php'); 
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../login.php?error=Debes+iniciar+sesion');
-    exit;
+    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+ver+tus+pedidos");
+    exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = (int)$_SESSION['user_id'];
 
-// CONSULTA CORREGIDA: 
-// 1. Unimos Reservation con Invoices para obtener el 'Total' y el 'Id' de la factura.
-// 2. Ordenamos por fecha de reserva descendente.
-$sql = "SELECT 
-            r.Id AS ReservationId, 
-            r.Booking_date, 
-            r.Status, 
-            i.Total, 
-            i.Id AS InvoiceId 
+// 1. Consulta para obtener las reservas del usuario
+// Usamos DISTINCT para agrupar por Id_Reservation, ya que puede haber varios Reservation_Rooms
+$sql = "SELECT DISTINCT
+            r.Id AS ReservationId,
+            r.Booking_date,
+            r.CheckIn_Date,
+            r.CheckOut_Date,
+            r.Status,
+            r.Num_Nights,
+            h.Name AS HotelName,
+            h.City,
+            i.InvoiceNumber,
+            i.Total
         FROM Reservation r
+        INNER JOIN Reservation_Rooms rr ON r.Id = rr.Id_Reservation
+        INNER JOIN Rooms rm ON rr.Id_Room = rm.Id
+        INNER JOIN Hotels h ON rm.Id_Hotel = h.Id
         LEFT JOIN Invoices i ON r.Id = i.Id_Reservation
-        WHERE r.Id_User = ? 
+        WHERE r.Id_User = ?
         ORDER BY r.Booking_date DESC";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $user_id);
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$pedidos = [];
-while ($row = $result->fetch_assoc()) {
-    $pedidos[] = $row;
-}
+$resultado = $stmt->get_result();
+$pedidos = $resultado->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+$nombreCadena = "Hoteles Nueva España S.L.";
+$user_name = htmlspecialchars($_SESSION['user_name']);
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Mis Pedidos</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../styleCarlos.css">
+    <meta charset="UTF-8">
+    <title>Mis Pedidos - Hoteles NESL</title>
     <style>
-        body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; }
-        .pedidos-container { max-width: 1000px; margin: 40px auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-        h1 { color: #a02040; font-size: 2rem; margin-bottom: 30px; border-bottom: 2px solid #f8f9fa; padding-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        th, td { padding: 18px 15px; border-bottom: 1px solid #e9ecef; text-align: left; }
-        th { background: #f8f9fa; color: #343a40; font-weight: 600; }
-        tr:last-child td { border-bottom: none; }
-        
-        .btn { padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-block; transition: all 0.2s; }
-        .btn-view { background: #a02040; color: #fff; }
-        .btn-view:hover { background: #801933; }
-        .btn-invoice { background: #007bff; color: white; margin-left: 5px; }
-        .btn-invoice:hover { background: #0056b3; }
-        .btn-back { background: #343a40; color: white; }
-        .btn-back:hover { background: #23272b; }
-        
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
-        .status-Confirmada { background: #d4edda; color: #155724; }
-        .status-Cancelada { background: #f8d7da; color: #721c24; }
-        .status-Pendiente { background: #fff3cd; color: #856404; }
+        /* Estilos CSS simplificados para mantener la estética */
+        :root {
+            --color-primary: #a02040;
+            --color-secondary: #ffc107;
+            --color-dark: #343a40;
+            --color-light: #f8f9fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--color-light);
+            margin: 0;
+            padding-top: 80px; 
+        }
+        .container {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-secondary);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .pedido-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.3s;
+        }
+        .pedido-card:hover {
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+        }
+        .details {
+            flex-grow: 1;
+        }
+        .details h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.4em;
+            color: var(--color-dark);
+        }
+        .details p {
+            margin: 5px 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .details strong {
+             /* Estilo adicional para que las negritas resalten un poco más si es necesario */
+             color: var(--color-dark);
+             font-weight: 700;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+        .btn-detail {
+            background-color: var(--color-primary);
+            color: white;
+        }
+        .btn-detail:hover {
+            background-color: #801933;
+        }
+        .navbar {
+            background-color: #ffffff; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 10px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            box-sizing: border-box; 
+        }
+        .navbar-brand {
+            color: var(--color-primary);
+            font-size: 1.8em;
+            font-weight: 700;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-<div class="pedidos-container">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h1>📦 Mis Reservas</h1>
-        <a href="../cart/view_cart.php" class="btn btn-back">← Volver al Carrito</a>
+
+    <nav class="navbar">
+        <a href="index.php" class="navbar-brand"><?php echo $nombreCadena; ?></a>
+        <a href="index.php" class="btn btn-detail">← Volver a Hoteles</a>
+    </nav>
+    
+    <div class="container">
+        <h1>Mis Pedidos</h1>
+        
+        <?php if (count($pedidos) > 0): ?>
+            <?php foreach ($pedidos as $pedido): 
+                // Formatear fechas para mostrar
+                $check_in_es = (new DateTime($pedido['CheckIn_Date']))->format('d/m/Y');
+                $check_out_es = (new DateTime($pedido['CheckOut_Date']))->format('d/m/Y');
+                $booking_date_es = (new DateTime($pedido['Booking_date']))->format('d/m/Y');
+            ?>
+                <div class="pedido-card">
+                    <div class="details">
+                        <h3>🏨 Reserva en <?php echo htmlspecialchars($pedido['HotelName']); ?> (<?php echo htmlspecialchars($pedido['City']); ?>)</h3>
+                        
+                        <p>
+                            Fechas: Del <strong><?php echo $check_in_es; ?></strong> al <strong><?php echo $check_out_es; ?></strong> (<?php echo $pedido['Num_Nights']; ?> noches)
+                        </p>
+                        <p>
+                            <strong>Total Pagado:</strong> <?php echo number_format($pedido['Total'], 2); ?> € | 
+                            <strong>Fecha Pedido:</strong> <?php echo $booking_date_es; ?>
+                        </p>
+                        </div>
+                    <div class="actions">
+                        <a href="detalle_pedido.php?reserva_id=<?php echo $pedido['ReservationId']; ?>" class="btn btn-detail">
+                            Ver Detalles
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="pedido-card">
+                <p>Aún no tienes pedidos registrados.</p>
+            </div>
+        <?php endif; ?>
     </div>
 
-    <?php if (empty($pedidos)): ?>
-        <p style="text-align:center; color:#666; margin-top:20px;">No tienes reservas realizadas todavía.</p>
-    <?php else: ?>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th># Reserva</th>
-                        <th>Fecha Reserva</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($pedidos as $pedido): ?>
-                    <tr>
-                        <td>#<?php echo $pedido['ReservationId']; ?></td>
-                        <td><?php echo date('d/m/Y', strtotime($pedido['Booking_date'])); ?></td>
-                        <td>
-                            <?php echo ($pedido['Total']) ? '€' . number_format($pedido['Total'], 2) : '-'; ?>
-                        </td>
-                        <td>
-                            <span class="status-badge status-<?php echo htmlspecialchars($pedido['Status']); ?>">
-                                <?php echo htmlspecialchars($pedido['Status']); ?>
-                            </span>
-                        </td>
-                        <td>
-                            <a href="ver_pedido.php?id=<?php echo $pedido['ReservationId']; ?>" class="btn btn-view">👁️ Detalles</a>
-                            
-                            <?php if ($pedido['InvoiceId']): ?>
-                                <a href="ver_factura.php?id=<?php echo $pedido['InvoiceId']; ?>" class="btn btn-invoice" target="_blank">📄 Factura</a>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
-    <?php endif; ?>
-</div>
 </body>
 </html>

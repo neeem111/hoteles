@@ -1,6 +1,6 @@
 <?php
 session_start();
-include("conexion.php");
+include("../conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email_form = trim($_POST['email'] ?? '');
@@ -41,9 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Redirección según rol
             if (strcasecmp($_SESSION['user_role'], 'Administrador') === 0) {
-                header("Location: Admin/index.php");
+                header("Location: ../Admin/index.php");
             } else {
-                header("Location: Cliente/index.php");
+                header("Location: ../Cliente/index.php");
             }
             exit();
 

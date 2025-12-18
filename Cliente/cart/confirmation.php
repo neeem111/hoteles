@@ -6,7 +6,7 @@ $last = isset($_SESSION['last_reservations']) ? $_SESSION['last_reservations'] :
 
 if (empty($last)) {
     // Si no hay nada, redirigimos a la tienda para evitar accesos directos raros
-    header('Location: ../Cliente/index.php');
+    header('Location: ../index.php');
     exit;
 }
 
@@ -129,7 +129,7 @@ $userName = $_SESSION['user_name'] ?? '';
                             <td><?php echo number_format($res['total'], 2); ?> €</td>
                             <td>
                                 <?php if(isset($res['invoice_id'])): ?>
-                                    <a href="../Cliente/ver_factura.php?id=<?php echo $res['invoice_id']; ?>" target="_blank" class="btn-invoice">
+                                    <a href="../ver_factura.php?id=<?php echo $res['invoice_id']; ?>" target="_blank" class="btn-invoice">
                                         📄 Descargar
                                     </a>
                                 <?php else: ?>
@@ -151,7 +151,7 @@ $userName = $_SESSION['user_name'] ?? '';
                 Puedes consultar más detalles contactando con el hotel o en el panel de usuario.
             </p>
 
-            <a href="../Cliente/index.php" class="btn">Volver a la página principal</a>
+            <a href="../index.php" class="btn">Volver a la página principal</a>
         </div>
     </div>
 </body>

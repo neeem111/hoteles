@@ -17,9 +17,9 @@ setInterval(() => {
     // se considera que no hay pestañas activas
     if (Date.now() - lastActive > 40000) {
         // No hay pestañas activas
-        fetch("logout.php")
+        fetch("auth/logout.php")
             .then(() => {
-                window.location.href = "login.php";
+                window.location.href = "auth/login.php";
             });
         return;
     }
