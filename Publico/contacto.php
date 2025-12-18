@@ -1,7 +1,7 @@
 <?php
 session_start();
-// La conexión debe subir un nivel (asumo que contacto.php está en la raíz)
-include('conexion.php'); 
+
+include('../Config/conexion.php'); 
 
 $mensaje = "";
 $exito = false;
@@ -50,7 +50,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 <head>
     <meta charset="UTF-8">
     <title>Contacto - Hoteles NESL</title>
-    <link rel="stylesheet" href="styleCarlos.css">
+    <link rel="stylesheet" href="Assets/css/styleCarlos.css">
     <style>
         /* Estilos de la tarjeta de login/registro reutilizados */
         .contact-container {
@@ -100,7 +100,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
         <div class="contact-info">
             <p><strong>📞 Teléfono:</strong> +34 900 123 456</p>
             <p><strong>📧 Email:</strong> info@hotelesnesl.es</p>
-            <p><strong>📍 Dirección:</strong> Paseo de Pereda, 25, Santander</p>
+            <p><strong>📍 Dirección:</strong> Avenida de España, 25, Albacete</p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
         </div>
 
@@ -129,7 +129,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
         </form>
         
         <div class="back-store" style="margin-top: 25px;">
-            <a href="Cliente/index.php">← Volver a la tienda</a>
+            <a href="../Cliente/index.php">← Volver a la tienda</a>
         </div>
     </div>
 </body>
