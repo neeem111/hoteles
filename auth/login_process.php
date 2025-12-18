@@ -1,6 +1,6 @@
 <?php
 session_start();
-include("../conexion.php");
+include("../Config/conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email_form = trim($_POST['email'] ?? '');

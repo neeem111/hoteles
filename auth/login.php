@@ -18,7 +18,7 @@ if (isset($_GET['msg'])) {
 <head>
     <meta charset="UTF-8">
     <title>Iniciar sesión - Mi Tienda</title>
-    <link rel="stylesheet" href="../styleCarlos.css">
+    <link rel="stylesheet" href="../Assets/css/styleCarlos.css">
 </head>
 <body>
     <div class="login-card">
