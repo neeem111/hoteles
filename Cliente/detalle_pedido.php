@@ -3,7 +3,7 @@ session_start();
 include('../conexion.php'); 
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php?error=Acceso+denegado");
+    header("Location: ../auth/login.php?error=Acceso+denegado");
     exit();
 }
 

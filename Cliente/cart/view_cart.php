@@ -270,9 +270,9 @@ function format_date_es($date) {
                         <input type="hidden" name="currency_code" value="EUR">
                         <input type="hidden" name="item_name" value="Reserva Hoteles NESL - Compra Múltiple">
                         <input type="hidden" name="amount" value="<?php echo number_format($total, 2, '.', ''); ?>">
-                        <input type="hidden" name="return" value="http://localhost/hoteles/cart/checkout.php?status=success_paypal">
+                        <input type="hidden" name="return" value="http://localhost/hoteles/Cliente/cart/checkout.php?status=success_paypal">
                         <input type="hidden" name="custom" value="<?php echo $_SESSION['user_id']; ?>">
-                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/cart/pago_cancelado.php">
+                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/Cliente/cart/pago_cancelado.php">
                         <button type="submit" class="btn btn-paypal">Pagar con PayPal 💳</button>
                     </form>
                 <?php else: ?>

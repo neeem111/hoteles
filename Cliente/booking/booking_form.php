@@ -357,7 +357,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 <div class="msg-ok"><?php echo htmlspecialchars($cartSuccess); ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="../cart/add_reservation.php" id="booking-form">
+            <form method="POST" action="../Cliente/cart/add_reservation.php" id="booking-form">
                 <input type="hidden" name="hotel_id" value="<?php echo (int)$hotel['Id']; ?>">
                 <input type="hidden" name="room_type_id" value="<?php echo (int)$tipo['Id']; ?>">
                 <input type="hidden" name="price_per_night" value="<?php echo $precio_final; ?>">

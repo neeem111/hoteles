@@ -1,6 +1,6 @@
 <?php
 session_start();
-// Ajusta la ruta si view_cart.php está en una subcarpeta (ej: cart/)
+// Ajusta la ruta si view_cart.php está en una subcarpeta (ej: Cliente/cart/)
 include('../conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
@@ -301,8 +301,8 @@ foreach ($cart as $id => $item) {
                         <input type="hidden" name="item_name" value="Reserva Hoteles NESL - Compra Múltiple">
                         <input type="hidden" name="amount" value="<?php echo $total; ?>">
                         
-                        <input type="hidden" name="return" value="http://localhost/hoteles/cart/checkout.php">
-                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/cart/pago_cancelado.php">
+                        <input type="hidden" name="return" value="http://localhost/hoteles/Cliente/cart/checkout.php">
+                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/Cliente/cart/pago_cancelado.php">
                         
                         <button type="submit" class="btn btn-paypal">
                             Pagar con PayPal 💳

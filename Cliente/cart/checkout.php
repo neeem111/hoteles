@@ -46,7 +46,7 @@ if (empty($_SESSION['cart'])) {
 
 if (!isset($_SESSION['user_id'])) {
     // Redirigir al usuario si no está logueado
-    $_SESSION['redirect_after_login'] = 'cart/view_cart.php';
+    $_SESSION['redirect_after_login'] = 'Cliente/cart/view_cart.php';
     header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+confirmar+la+reserva");
     exit;
 }

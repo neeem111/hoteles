@@ -349,13 +349,13 @@ if ($stmt) {
         <div class="navbar-actions">
 
         <?php if ($is_logged_in): ?>
-        <a href="mis_pedidos.php" class="nav-btn btn-login" style="background:#5cb5c; border-color:#5cb85c;">
+        <a href="mis_pedidos.php" class="nav-btn btn-login" style="background:#5cb5bc; border-color:#5cb85c;">
             📦 Mis Pedidos
         </a>
     <?php endif; ?>
             
             <div class="cart-icon">
-                <a href="../cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
+                <a href="../Cliente/cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
             </div>
 
             <?php if ($is_logged_in): ?>
@@ -365,9 +365,9 @@ if ($stmt) {
                     <a href="../Admin/index.php" class="nav-btn admin-link">Panel Admin</a>
                 <?php endif; ?>
                 
-                <a href="../logout.php" class="nav-btn btn-signup">Cerrar Sesión</a>
+                <a href="../auth/logout.php" class="nav-btn btn-signup">Cerrar Sesión</a>
             <?php else: ?>
-                <a href="../login.php" class="nav-btn btn-login">Iniciar Sesión</a>
+                <a href="../auth/login.php" class="nav-btn btn-login">Iniciar Sesión</a>
                 <a href="register.php" class="nav-btn btn-signup">Regístrate</a>
             <?php endif; ?>
         </div>

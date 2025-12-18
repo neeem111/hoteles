@@ -56,7 +56,7 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
 
             if ($stmt->execute()) {
                 unset($_SESSION['admin_gate']);
-                header("Location: ../login.php?msg=Usuario+registrado+correctamente");
+                header("Location: ../auth/login.php?msg=Usuario+registrado+correctamente");
                 exit();
             } else {
                 $mensaje = "Error al registrar usuario.";
@@ -253,7 +253,7 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
 
         <div class="back-store">
             <a href="register.php?logout=1">← Salir del modo de alta</a><br>
-            <a href="../login.php">← Volver al login</a>
+            <a href="../auth/login.php">← Volver al login</a>
         </div>
     </div>
 

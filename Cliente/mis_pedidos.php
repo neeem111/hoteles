@@ -4,7 +4,7 @@ session_start();
 include('../conexion.php'); 
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php?error=Debes+iniciar+sesion+para+ver+tus+pedidos");
+    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+ver+tus+pedidos");
     exit();
 }
 

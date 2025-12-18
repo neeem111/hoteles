@@ -12,7 +12,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
     <style>
         /* Estilos específicos para la página de contenido */
         body {
-            background-color: #f8ff9fa; /* Color de fondo claro */
+            background-color: #1192FBFA; /* Color de fondo claro */
             padding-top: 50px; /* Deja espacio si usas un navbar fijo */
             display: block; /* Desactiva el flex de styleCarlos.css para body */
             min-height: auto;

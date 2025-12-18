@@ -3,7 +3,7 @@ session_start();
 
 // Solo permite acceso a administradores
 if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administrador') !== 0) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 

@@ -3,7 +3,7 @@ session_start();
 
 // Solo permite acceso a administradores
 if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administrador') !== 0) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 
@@ -107,7 +107,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 
 <div class="header">
     <h1>Bienvenido, <?= $nombre ?></h1>
-    <a href="../logout.php" class="logout-btn">Cerrar Sesión</a>
+    <a href="../auth/logout.php" class="logout-btn">Cerrar Sesión</a>
 </div>
 
 <div class="container">

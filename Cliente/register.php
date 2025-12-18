@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sissss", $name, $age, $address, $email, $password_hashed, $rol);
 
         if ($stmt->execute()) {
-            header("Location: ../login.php?msg=Registro+exitoso,+ahora+puedes+iniciar+sesión");
+            header("Location: ../auth/login.php?msg=Registro+exitoso,+ahora+puedes+iniciar+sesión");
             exit();
         } else {
             $mensaje = "Error al registrar usuario.";
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="back-store">
-            <a href="../login.php">← Ya tengo cuenta</a><br>
+            <a href="../auth/login.php">← Ya tengo cuenta</a><br>
             <a href="index.php">← Volver a la tienda</a>
         </div>
     </div>
