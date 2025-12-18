@@ -346,7 +346,7 @@ if ($stmt) {
     <?php endif; ?>
             
             <div class="cart-icon">
-                <a href="../cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
+                <a href="cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
             </div>
 
             <?php if ($is_logged_in): ?>
