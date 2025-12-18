@@ -12,7 +12,7 @@ if (isset($_GET['logout']) && $_GET['logout'] == '1') {
 
 $mensaje = "";
 
-// 1. Validar candado
+// Validar candado
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_access'])) {
     $access_try = trim($_POST['admin_access']);
     if ($access_try === ADMIN_GATE_PASSWORD) {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_access'])) {
     }
 }
 
-// 2. Registrar usuario
+// Registrar usuario
 if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
@@ -136,8 +136,7 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
             font-size: 0.85rem;
         }
         .back-store a { color: #007bff; text-decoration: none; }
-
-        /* ---------- ESTILO DEL TOGGLE ---------- */
+        
         .toggle-wrapper {
             display: flex;
             background: #e9e9e9;

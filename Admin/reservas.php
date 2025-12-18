@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administ
 
 include("../Config/conexion.php");
 
-// 1. Consulta para obtener todas las reservas
+// Consulta para obtener todas las reservas
 $sql = "SELECT 
             r.Id AS ReservationId,
             r.CheckIn_Date,
