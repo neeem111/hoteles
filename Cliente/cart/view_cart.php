@@ -272,7 +272,7 @@ function format_date_es($date) {
                         <input type="hidden" name="amount" value="<?php echo number_format($total, 2, '.', ''); ?>">
                         <input type="hidden" name="return" value="http://localhost/hoteles/Cliente/cart/checkout.php?status=success_paypal">
                         <input type="hidden" name="custom" value="<?php echo $_SESSION['user_id']; ?>">
-                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/Cliente/cart/pago_cancelado.php">
+                        <input type="hidden" name="cancel_return" value="http://localhost/hoteles/Cliente/cart/view_cart.php">
                         <button type="submit" class="btn btn-paypal">Pagar con PayPal 💳</button>
                     </form>
                 <?php else: ?>
@@ -289,12 +289,21 @@ function format_date_es($date) {
         <p>Total: <strong>$<?php echo number_format($total, 2); ?></strong></p>
         <form id="card-payment-form">
             <div style="margin-bottom:15px;">
-                <label style="display:block;">Número de Tarjeta</label>
-                <input type="text" required placeholder="XXXX XXXX XXXX XXXX" maxlength="16" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                <label style="display:block; margin-bottom:5px; font-weight:600;">Número de Tarjeta</label>
+                <input type="text" id="card-number" name="card_number" required placeholder="1234 5678 9012 3456" maxlength="19" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:16px; letter-spacing:2px;">
+                <span id="card-number-error" style="color:#dc3545; font-size:0.85rem; display:none;"></span>
             </div>
             <div style="display:flex; gap:15px; margin-bottom:15px;">
-                <input type="text" placeholder="MM/AA" maxlength="5" style="width:50%; padding:10px; border:1px solid #ccc; border-radius:6px;">
-                <input type="text" placeholder="CVV" maxlength="4" style="width:50%; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                <div style="flex:1;">
+                    <label style="display:block; margin-bottom:5px; font-weight:600;">Fecha Expiración</label>
+                    <input type="text" id="card-expiry" name="card_expiry" required placeholder="MM/AA" maxlength="5" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:16px;">
+                    <span id="card-expiry-error" style="color:#dc3545; font-size:0.85rem; display:none;"></span>
+                </div>
+                <div style="flex:1;">
+                    <label style="display:block; margin-bottom:5px; font-weight:600;">CVV</label>
+                    <input type="text" id="card-cvv" name="card_cvv" required placeholder="123" maxlength="4" style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:16px;">
+                    <span id="card-cvv-error" style="color:#dc3545; font-size:0.85rem; display:none;"></span>
+                </div>
             </div>
             <button type="submit" class="btn" style="background:var(--color-primary); color:white; width:100%;">Confirmar Pago</button>
             <button type="button" id="close-modal-btn" style="background:none; border:none; color:#999; width:100%; margin-top:10px; cursor:pointer;">Cancelar</button>
@@ -307,17 +316,261 @@ function format_date_es($date) {
         const payCardBtn = document.getElementById('pay-card-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const paymentModal = document.getElementById('payment-modal');
+        const cardNumberInput = document.getElementById('card-number');
+        const cardExpiryInput = document.getElementById('card-expiry');
+        const cardCvvInput = document.getElementById('card-cvv');
+        const cardPaymentForm = document.getElementById('card-payment-form');
 
+        // Abrir modal
         if (payCardBtn) {
-            payCardBtn.addEventListener('click', (e) => { e.preventDefault(); paymentModal.style.display = 'block'; });
+            payCardBtn.addEventListener('click', (e) => { 
+                e.preventDefault(); 
+                paymentModal.style.display = 'block'; 
+            });
         }
+
+        // Cerrar modal
         if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => { paymentModal.style.display = 'none'; });
+            closeModalBtn.addEventListener('click', () => { 
+                paymentModal.style.display = 'none';
+                // Limpiar formulario al cerrar
+                cardPaymentForm.reset();
+                clearErrors();
+            });
         }
-        document.getElementById('card-payment-form')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            window.location.href = 'checkout.php?payment_method=card_successful';
+
+        // Cerrar modal al hacer clic fuera
+        paymentModal.addEventListener('click', (e) => {
+            if (e.target === paymentModal) {
+                paymentModal.style.display = 'none';
+                cardPaymentForm.reset();
+                clearErrors();
+            }
         });
+
+        // Función para mostrar errores
+        function showError(inputId, errorId, message) {
+            const input = document.getElementById(inputId);
+            const errorSpan = document.getElementById(errorId);
+            input.style.borderColor = '#dc3545';
+            errorSpan.textContent = message;
+            errorSpan.style.display = 'block';
+        }
+
+        // Función para limpiar errores
+        function clearError(inputId, errorId) {
+            const input = document.getElementById(inputId);
+            const errorSpan = document.getElementById(errorId);
+            input.style.borderColor = '#ccc';
+            errorSpan.style.display = 'none';
+        }
+
+        function clearErrors() {
+            clearError('card-number', 'card-number-error');
+            clearError('card-expiry', 'card-expiry-error');
+            clearError('card-cvv', 'card-cvv-error');
+        }
+
+        // Validar número de tarjeta (solo números, 16 dígitos)
+        function validateCardNumber(value) {
+            const digitsOnly = value.replace(/\s/g, '');
+            return /^\d{16}$/.test(digitsOnly);
+        }
+
+        // Formatear número de tarjeta con espacios cada 4 dígitos
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s/g, ''); // Eliminar espacios
+                value = value.replace(/\D/g, ''); // Solo números
+                
+                // Limitar a 16 dígitos
+                if (value.length > 16) {
+                    value = value.substring(0, 16);
+                }
+                
+                // Agregar espacios cada 4 dígitos
+                let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                e.target.value = formatted;
+                
+                // Validación en tiempo real
+                if (value.length > 0) {
+                    if (value.length < 16) {
+                        showError('card-number', 'card-number-error', 'El número de tarjeta debe tener 16 dígitos');
+                    } else if (!validateCardNumber(formatted)) {
+                        showError('card-number', 'card-number-error', 'El número de tarjeta no es válido');
+                    } else {
+                        clearError('card-number', 'card-number-error');
+                    }
+                } else {
+                    clearError('card-number', 'card-number-error');
+                }
+            });
+
+            cardNumberInput.addEventListener('blur', function(e) {
+                const value = e.target.value.replace(/\s/g, '');
+                if (value.length > 0 && !validateCardNumber(value)) {
+                    showError('card-number', 'card-number-error', 'El número de tarjeta debe tener 16 dígitos');
+                }
+            });
+        }
+
+        // Validar fecha de expiración (MM/AA, no caducada)
+        function validateExpiry(value) {
+            const parts = value.split('/');
+            if (parts.length !== 2) return false;
+            
+            const month = parseInt(parts[0], 10);
+            const year = parseInt(parts[1], 10);
+            
+            // Validar mes (01-12)
+            if (month < 1 || month > 12) return false;
+            
+            // Validar año (2 dígitos, convertir a 4)
+            const currentYear = new Date().getFullYear() % 100;
+            const currentMonth = new Date().getMonth() + 1;
+            const fullYear = 2000 + year;
+            const currentFullYear = new Date().getFullYear();
+            
+            // Verificar si está caducada
+            if (fullYear < currentFullYear) return false;
+            if (fullYear === currentFullYear && month < currentMonth) return false;
+            
+            return true;
+        }
+
+        // Formatear fecha de expiración (MM/AA)
+        if (cardExpiryInput) {
+            cardExpiryInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Solo números
+                
+                // Limitar a 4 dígitos
+                if (value.length > 4) {
+                    value = value.substring(0, 4);
+                }
+                
+                // Agregar barra después de 2 dígitos
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2);
+                }
+                
+                e.target.value = value;
+                
+                // Validación en tiempo real
+                if (value.length > 0) {
+                    if (value.length < 5) {
+                        showError('card-expiry', 'card-expiry-error', 'Formato: MM/AA');
+                    } else if (!validateExpiry(value)) {
+                        const parts = value.split('/');
+                        const month = parseInt(parts[0], 10);
+                        if (month < 1 || month > 12) {
+                            showError('card-expiry', 'card-expiry-error', 'El mes debe estar entre 01 y 12');
+                        } else {
+                            showError('card-expiry', 'card-expiry-error', 'La tarjeta está caducada o la fecha no es válida');
+                        }
+                    } else {
+                        clearError('card-expiry', 'card-expiry-error');
+                    }
+                } else {
+                    clearError('card-expiry', 'card-expiry-error');
+                }
+            });
+
+            cardExpiryInput.addEventListener('blur', function(e) {
+                const value = e.target.value;
+                if (value.length > 0 && !validateExpiry(value)) {
+                    if (value.length < 5) {
+                        showError('card-expiry', 'card-expiry-error', 'Formato: MM/AA');
+                    } else {
+                        showError('card-expiry', 'card-expiry-error', 'La fecha no es válida o la tarjeta está caducada');
+                    }
+                }
+            });
+        }
+
+        // Validar CVV (3-4 dígitos, solo números)
+        function validateCVV(value) {
+            return /^\d{3,4}$/.test(value);
+        }
+
+        if (cardCvvInput) {
+            cardCvvInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, ''); // Solo números
+                
+                // Limitar a 4 dígitos
+                if (value.length > 4) {
+                    value = value.substring(0, 4);
+                }
+                
+                e.target.value = value;
+                
+                // Validación en tiempo real
+                if (value.length > 0) {
+                    if (value.length < 3) {
+                        showError('card-cvv', 'card-cvv-error', 'El CVV debe tener 3 o 4 dígitos');
+                    } else if (!validateCVV(value)) {
+                        showError('card-cvv', 'card-cvv-error', 'El CVV solo puede contener números');
+                    } else {
+                        clearError('card-cvv', 'card-cvv-error');
+                    }
+                } else {
+                    clearError('card-cvv', 'card-cvv-error');
+                }
+            });
+
+            cardCvvInput.addEventListener('blur', function(e) {
+                const value = e.target.value;
+                if (value.length > 0 && !validateCVV(value)) {
+                    showError('card-cvv', 'card-cvv-error', 'El CVV debe tener 3 o 4 dígitos');
+                }
+            });
+        }
+
+        // Validar formulario completo al enviar
+        if (cardPaymentForm) {
+            cardPaymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const cardNumber = cardNumberInput.value.replace(/\s/g, '');
+                const cardExpiry = cardExpiryInput.value;
+                const cardCvv = cardCvvInput.value;
+                
+                let isValid = true;
+                
+                // Validar número de tarjeta
+                if (!validateCardNumber(cardNumber)) {
+                    showError('card-number', 'card-number-error', 'El número de tarjeta debe tener 16 dígitos');
+                    isValid = false;
+                }
+                
+                // Validar fecha de expiración
+                if (!validateExpiry(cardExpiry)) {
+                    if (cardExpiry.length < 5) {
+                        showError('card-expiry', 'card-expiry-error', 'Formato: MM/AA');
+                    } else {
+                        showError('card-expiry', 'card-expiry-error', 'La fecha no es válida o la tarjeta está caducada');
+                    }
+                    isValid = false;
+                }
+                
+                // Validar CVV
+                if (!validateCVV(cardCvv)) {
+                    showError('card-cvv', 'card-cvv-error', 'El CVV debe tener 3 o 4 dígitos');
+                    isValid = false;
+                }
+                
+                // Si todo es válido, proceder con el pago
+                if (isValid) {
+                    window.location.href = 'checkout.php?payment_method=card_successful';
+                } else {
+                    // Scroll al primer error
+                    const firstError = document.querySelector('[style*="border-color: rgb(220, 53, 69)"]');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus();
+                    }
+                }
+            });
+        }
     });
 </script>
 
