@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Ajusta la ruta si es necesario
-include('../conexion.php'); 
+include('../../conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
