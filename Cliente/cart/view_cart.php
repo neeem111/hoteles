@@ -276,7 +276,7 @@ function format_date_es($date) {
                         <button type="submit" class="btn btn-paypal">Pagar con PayPal 💳</button>
                     </form>
                 <?php else: ?>
-                    <a href="../login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">🔐 Iniciar Sesión para Pagar</a>
+                    <a href="../auth/login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">🔐 Iniciar Sesión para Pagar</a>
                 <?php endif; ?>
             </div>
         </div>

@@ -310,7 +310,7 @@ foreach ($cart as $id => $item) {
                     </form>
 
                 <?php else: ?>
-                    <a href="../login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">
+                    <a href="../auth/login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">
                         🔐 Iniciar Sesión para Pagar
                     </a>
                 <?php endif; ?>

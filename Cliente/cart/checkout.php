@@ -32,7 +32,7 @@ if (empty($_SESSION['cart'])) {
         } else {
             // Si la sesión se perdió y no podemos confirmar el pago, la única opción es index.
              $_SESSION['cart_error'] = 'Sesión expirada. Por favor, inicia sesión para verificar el pago.';
-             header('Location: ../login.php');
+             header('Location: ../auth/login.php');
              exit;
         }
     }
@@ -47,7 +47,7 @@ if (empty($_SESSION['cart'])) {
 if (!isset($_SESSION['user_id'])) {
     // Redirigir al usuario si no está logueado
     $_SESSION['redirect_after_login'] = 'cart/view_cart.php';
-    header("Location: ../login.php?error=Debes+iniciar+sesion+para+confirmar+la+reserva");
+    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+confirmar+la+reserva");
     exit;
 }
 

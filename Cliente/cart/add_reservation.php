@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Debe estar logueado para añadir al carrito
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['redirect_after_login'] = '../Cliente/index.php';
-    header("Location: ../login.php?error=Debes+iniciar+sesion+para+añadir+al+carrito");
+    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+añadir+al+carrito");
     exit;
 }
 
