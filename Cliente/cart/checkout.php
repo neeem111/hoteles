@@ -27,12 +27,12 @@ if (empty($_SESSION['cart'])) {
             // Simplemente redirigimos al usuario al listado de pedidos para que vea su nuevo ítem.
             // Asume que la reserva se creó correctamente y se le dará un mensaje genérico.
             $_SESSION['cart_success'] = 'Pago CONFIRMADO. Puede ver los detalles en su historial de pedidos.';
-            header('Location: ../Cliente/mis_pedidos.php'); 
+            header('Location: ../mis_pedidos.php'); 
             exit;
         } else {
             // Si la sesión se perdió y no podemos confirmar el pago, la única opción es index.
              $_SESSION['cart_error'] = 'Sesión expirada. Por favor, inicia sesión para verificar el pago.';
-             header('Location: ../auth/login.php');
+             header('Location: ../../auth/login.php');
              exit;
         }
     }
@@ -47,11 +47,11 @@ if (empty($_SESSION['cart'])) {
 if (!isset($_SESSION['user_id'])) {
     // Redirigir al usuario si no está logueado
     $_SESSION['redirect_after_login'] = 'Cliente/cart/view_cart.php';
-    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+confirmar+la+reserva");
+    header("Location: ../../auth/login.php?error=Debes+iniciar+sesion+para+confirmar+la+reserva");
     exit;
 }
 
-include('../conexion.php');
+include('../../conexion.php');
 
 $cart   = $_SESSION['cart'];
 $userId = (int)$_SESSION['user_id'];
