@@ -1,11 +1,11 @@
 <?php
 session_start();
-include __DIR__ . '/../conexion.php';
+include __DIR__ . '../../conexion.php';
 
 // Debe estar logueado para poder añadir al carrito
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? '../Cliente/index.php';
-    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+continuar");
+    header("Location: ../../auth/login.php?error=Debes+iniciar+sesion+para+continuar");
     exit;
 }
 
@@ -24,7 +24,7 @@ $price_pre = isset($_GET['price']) ? (float)$_GET['price'] : 0.0; // Recibimos e
 
 // Validación básica de IDs (las fechas se validarán más abajo)
 if ($hotel_id <= 0 || $room_type_id <= 0) {
-    header("Location: ../Cliente/index.php?error=Hotel+o+habitacion+no+valido");
+    header("Location: ../index.php?error=Hotel+o+habitacion+no+valido");
     exit;
 }
 
@@ -38,7 +38,7 @@ $hotel = $resH->fetch_assoc();
 $stmtH->close();
 
 if (!$hotel) {
-    header("Location: ../Cliente/index.php?error=Hotel+no+encontrado");
+    header("Location: ../index.php?error=Hotel+no+encontrado");
     exit;
 }
 
@@ -62,7 +62,7 @@ $tipo = $resT->fetch_assoc();
 $stmtT->close();
 
 if (!$tipo) {
-    header("Location: ../hotel.php?hotel_id=" . $hotel_id . "&error=Tipo+de+habitacion+no+encontrado");
+    header("Location: ../../hotel.php?hotel_id=" . $hotel_id . "&error=Tipo+de+habitacion+no+encontrado");
     exit;
 }
 
@@ -121,7 +121,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
 <head>
     <meta charset="UTF-8">
     <title>Seleccionar fechas - <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="../styleCarlos.css">
+    <link rel="stylesheet" href="../../styleCarlos.css">
     <style>
         /* [Estilos CSS: Se mantienen los tuyos, omitidos por brevedad, pero incluyendo .error-message] */
         body {
@@ -343,7 +343,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 </ul>
             <?php endif; ?>
 
-            <a href="../hotel.php?hotel_id=<?php echo (int)$hotel['Id']; ?>" class="back-link">← Volver al hotel</a>
+            <a href="../../hotel.php?hotel_id=<?php echo (int)$hotel['Id']; ?>" class="back-link">← Volver al hotel</a>
         </div>
 
         <div class="card">
@@ -357,7 +357,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 <div class="msg-ok"><?php echo htmlspecialchars($cartSuccess); ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="../Cliente/cart/add_reservation.php" id="booking-form">
+            <form method="POST" action="../cart/add_reservation.php" id="booking-form">
                 <input type="hidden" name="hotel_id" value="<?php echo (int)$hotel['Id']; ?>">
                 <input type="hidden" name="room_type_id" value="<?php echo (int)$tipo['Id']; ?>">
                 <input type="hidden" name="price_per_night" value="<?php echo $precio_final; ?>">
