@@ -350,7 +350,7 @@ if ($stmt) {
 
         <?php if ($is_logged_in): ?>
         <a href="mis_pedidos.php" class="nav-btn btn-login" style="background:#5cb5bc; border-color:#5cb85c;">
-            📦 Mis Pedidos
+            📦 Mis Reservas
         </a>
     <?php endif; ?>
             
