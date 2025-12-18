@@ -51,7 +51,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
         <h3>1. Datos del Titular</h3>
         <p><strong>Razón Social:</strong> Hoteles Nueva España S.L.</p>
         <p><strong>NIF:</strong> B-12345678</p>
-        <p><strong>Domicilio Social:</strong> Paseo de Pereda, 25, 39004, Santander, España.</p>
+        <p><strong>Domicilio Social:</strong> Avenida de España, 25, Albacete, España.</p>
         <p><strong>Correo Electrónico:</strong> info@hotelesnesl.es</p>
         <p><strong>Registro Mercantil:</strong> Inscrita en el Registro Mercantil de Santander, Tomo 1234, Folio 56, Sección 8, Hoja S-78900.</p>
 
