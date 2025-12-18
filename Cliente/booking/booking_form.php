@@ -1,10 +1,10 @@
 <?php
 session_start();
-include __DIR__ . '../../conexion.php';
+include ('../../conexion.php');
 
 // Debe estar logueado para poder añadir al carrito
 if (!isset($_SESSION['user_id'])) {
-    $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? '../Cliente/index.php';
+    $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'] ?? '../index.php';
     header("Location: ../../auth/login.php?error=Debes+iniciar+sesion+para+continuar");
     exit;
 }
