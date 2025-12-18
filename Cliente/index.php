@@ -6,9 +6,9 @@ $ciudadesDisponibles = ['Valencia', 'Santander', 'Toledo'];
 
 // --- LÓGICA DE PRECIOS POR CIUDAD ---
 $tarifasBase = [
-    'Toledo' => 20,
-    'Valencia' => 30,
-    'Santander' => 25
+    'Toledo' => 85,
+    'Valencia' => 85,
+    'Santander' => 85
 ];
 $incrementoPorCiudad = [
     'Toledo' => 15,
@@ -31,7 +31,7 @@ $check_out_filter = isset($_GET['check_out']) ? $_GET['check_out'] : date('Y-m-d
 
 // Verificar que la conexión sea exitosa
 if ($conn->connect_error) {
-    die("Error de conexión, revisa conexion.php");
+    die("Error de conexión, revisa tu conexion a la base de datos: ");
 }
 
 // 1. Consulta base para obtener todos los hoteles
@@ -61,7 +61,7 @@ if ($resultado && $resultado->num_rows > 0) {
         
         $ciudadHotel = $row['City'];
         // Asignamos el precio base como el precio 'Desde'
-        $row['PrecioDesde'] = $tarifasBase[$ciudadHotel] ?? 50; // 50 como fallback seguro
+        $row['PrecioDesde'] = $tarifasBase[$ciudadHotel] ?? 85; // 50 como fallback seguro
         
         $hoteles[] = $row;
     }
