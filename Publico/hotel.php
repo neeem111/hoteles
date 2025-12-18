@@ -229,7 +229,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
     <nav style="background:#a02040; color:white; padding:15px; text-align:center; position:fixed; top:0; width:100%; z-index:1000;">
         <a href="../Cliente/index.php" style="color:white; text-decoration:none; font-size:1.5em; font-weight:bold;">← Volver a Hoteles</a>
         <span style="float:right; margin-right: 20px; font-size:1.1em;">
-            <?php echo $is_logged_in ? "Bienvenido, " . $user_name : '<a href="auth/login.php" style="color:white;">Iniciar Sesión</a>'; ?>
+            <?php echo $is_logged_in ? "Bienvenid@, " . $user_name : '<a href="auth/login.php" style="color:white;">Iniciar Sesión</a>'; ?>
         </span>
     </nav>
 

@@ -103,7 +103,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 <body>
 
 <div class="header">
-    <h1>Bienvenido, <?= $nombre ?></h1>
+    <h1>Bienvenid@, <?= $nombre ?></h1>
     <a href="../auth/logout.php" class="logout-btn">Cerrar Sesión</a>
 </div>
 

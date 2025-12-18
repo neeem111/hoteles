@@ -350,7 +350,7 @@ if ($stmt) {
             </div>
 
             <?php if ($is_logged_in): ?>
-                <span class="user-greeting">Bienvenido, <strong><?php echo $user_name; ?></strong></span>
+                <span class="user-greeting">Bienvenid@, <strong><?php echo $user_name; ?></strong></span>
                 
                 <?php if (isset($_SESSION['user_role']) && strcasecmp($_SESSION['user_role'], 'Administrador') === 0): ?>
                     <a href="../Admin/index.php" class="nav-btn admin-link">Panel Admin</a>
