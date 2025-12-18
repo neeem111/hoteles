@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administ
     exit();
 }
 
-include("../conexion.php");
+include("../Config/conexion.php");
 
 // 1. Consulta para obtener todas las reservas
 $sql = "SELECT 
@@ -195,7 +195,7 @@ unset($_SESSION['reserva_msg']);
 
 </div>
 
-<script src="../keepalive.js"></script>
+<script src="../Assets/js/keepalive.js"></script>
 
 </body>
 </html>

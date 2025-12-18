@@ -148,7 +148,7 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
 </div>
 
 <!-- Mantener sesión activa -->
-<script src="../keepalive.js"></script>
+<script src="../Assets/js/keepalive.js"></script>
 
 </body>
 </html>

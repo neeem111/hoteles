@@ -1,6 +1,6 @@
 <?php
 session_start();
-include("../conexion.php");
+include("../Config/conexion.php");
 
 const ADMIN_GATE_PASSWORD = '$ilksong22';
 
@@ -258,6 +258,6 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
     </div>
 
 <?php endif; ?>
-<script src="../keepalive.js"></script>
+<script src="../Assets/js/keepalive.js"></script>
 </body>
 </html>
