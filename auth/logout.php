@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../conexion.php';
+require_once '../Config/conexion.php';
 
 if (isset($_SESSION['login_log_id'])) {
     $log_id = $_SESSION['login_log_id'];
