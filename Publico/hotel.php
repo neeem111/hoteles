@@ -1,13 +1,13 @@
 <?php
 session_start();
 // La ruta de conexión es correcta
-include('conexion.php'); 
+include('../Config/conexion.php'); 
 
 // 1. Obtener y validar el ID del hotel
 $hotel_id = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
 
 if ($hotel_id <= 0) {
-    header("Location: Cliente/index.php?error=Hotel+no+especificado");
+    header("Location: ../Cliente/index.php?error=Hotel+no+especificado");
     exit();
 }
 
@@ -18,7 +18,7 @@ $check_out = $_GET['check_out'] ?? null;
 // Validar que se hayan recibido fechas y que sean válidas (Check-out > Check-in)
 if (!$check_in || !$check_out || $check_in >= $check_out) {
     // En caso de fechas inválidas, redirigimos al index
-    header("Location: Cliente/index.php?error=Selecciona+fechas+validas");
+    header("Location: ../Cliente/index.php?error=Selecciona+fechas+validas");
     exit();
 }
 
@@ -85,7 +85,7 @@ function obtenerTiposHabitacionDisponiblesPorHotelYFecha($conn, $hotelId, $check
 $hotel = obtenerDetallesHotel($conn, $hotel_id);
 
 if (!$hotel) {
-    header("Location: Cliente/index.php?error=Hotel+no+encontrado");
+    header("Location: ../Cliente/index.php?error=Hotel+no+encontrado");
     exit();
 }
 
@@ -122,7 +122,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
 <head>
     <meta charset="UTF-8">
     <title>Reserva en <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="../styleCarlos.css">
+    <link rel="stylesheet" href="../Assets/css/styleCarlos.css">
     <style>
         /* ... (Estilos CSS) ... */
         :root {
@@ -227,9 +227,9 @@ $nombreCadena = "Hoteles Nueva España S.L.";
 <body>
 
     <nav style="background:#a02040; color:white; padding:15px; text-align:center; position:fixed; top:0; width:100%; z-index:1000;">
-        <a href="Cliente/index.php" style="color:white; text-decoration:none; font-size:1.5em; font-weight:bold;">← Volver a Hoteles</a>
+        <a href="../Cliente/index.php" style="color:white; text-decoration:none; font-size:1.5em; font-weight:bold;">← Volver a Hoteles</a>
         <span style="float:right; margin-right: 20px; font-size:1.1em;">
-            <?php echo $is_logged_in ? "Bienvenido, " . $user_name : '<a href="auth/login.php" style="color:white;">Iniciar Sesión</a>'; ?>
+            <?php echo $is_logged_in ? "Bienvenido, " . $user_name : '<a href="../auth/login.php" style="color:white;">Iniciar Sesión</a>'; ?>
         </span>
     </nav>
 
@@ -266,8 +266,8 @@ $nombreCadena = "Hoteles Nueva España S.L.";
                     <div class="room-price">
                         <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
                         <p style="color: #999;">Precio por noche</p>
-                        
-                        <a href="Cliente/booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id_RoomType']; ?>&check_in=<?php echo urlencode($check_in); ?>&check_out=<?php echo urlencode($check_out); ?>&price=<?php echo $room['PrecioNoche']; ?>" class="btn-select">
+
+                        <a href="../Cliente/booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id_RoomType']; ?>&check_in=<?php echo urlencode($check_in); ?>&check_out=<?php echo urlencode($check_out); ?>&price=<?php echo $room['PrecioNoche']; ?>" class="btn-select">
                             Seleccionar
                         </a>
                     </div>

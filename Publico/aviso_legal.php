@@ -1,5 +1,5 @@
 <?php session_start(); 
-// Código de sesión copiado para mantener el navbar si lo incluyes
+
 $is_logged_in = isset($_SESSION['user_id']);
 $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 ?>
@@ -8,7 +8,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 <head>
     <meta charset="UTF-8">
     <title>Aviso Legal - Hoteles NESL</title>
-    <link rel="stylesheet" href="styleCarlos.css">
+    <link rel="stylesheet" href="../Assets/css/styleCarlos.css">
     <style>
         /* Estilos específicos para la página de contenido */
         body {
@@ -44,7 +44,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 </head>
 <body>
     <div class="content-card">
-        <a href="Cliente/index.php" style="color: #007bff; text-decoration: none; font-weight: bold;">← Volver a la página principal</a>
+        <a href="../Cliente/index.php" style="color: #007bff; text-decoration: none; font-weight: bold;">← Volver a la página principal</a>
         
         <h1>Aviso Legal y Condiciones de Uso</h1>
         
