@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administ
     exit();
 }
 
-include("../conexion.php");
+include("../Config/conexion.php ");
 
 $sql = "SELECT * FROM login_logs ORDER BY login_time DESC";
 $result = $conn->query($sql);

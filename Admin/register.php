@@ -1,6 +1,6 @@
 <?php
 session_start();
-include("../conexion.php");
+include("../Config/conexion.php");
 
 const ADMIN_GATE_PASSWORD = '$ilksong22';
 

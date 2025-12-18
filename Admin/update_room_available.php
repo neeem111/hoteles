@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administ
     exit();
 }
 
-include("../conexion.php");
+include("../Config/conexion.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['room_id'], $_POST['available'])) {
     

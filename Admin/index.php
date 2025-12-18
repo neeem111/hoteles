@@ -130,19 +130,19 @@ $nombre = htmlspecialchars($_SESSION['user_name']);
     <div class="card">
         <h3>Registros de Sesión</h3>
         <p>Consulta los inicios y cierres de sesión de todos los usuarios.</p>
-        <a href="logs.php">Ver Logs</a>
+        <a href="../Admin/logs.php">Ver Logs</a>
     </div>
     
     <div class="card">
         <h3>Gestión de Reservas</h3>
         <p>Ver y modificar el estado de todas las reservas de los clientes.</p>
-        <a href="reservas.php">Administrar Reservas</a>
+        <a href="../Admin/reservas.php">Administrar Reservas</a>
     </div>
 
     <div class="card">
         <h3>Gestión de Habitaciones</h3>
         <p>Marcar habitaciones como operativas (disponibles) o no operativas (mantenimiento).</p>
-        <a href="gestion_habitaciones.php">Administrar Habitaciones</a>
+        <a href="../Admin/gestion_habitaciones.php">Administrar Habitaciones</a>
     </div>
     </div>
 </div>
