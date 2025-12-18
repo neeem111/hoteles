@@ -1,7 +1,7 @@
 <?php
 session_start();
 // La ruta de conexión es correcta
-include('conexion.php'); 
+include('Config/conexion.php'); 
 
 // 1. Obtener y validar el ID del hotel
 $hotel_id = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
