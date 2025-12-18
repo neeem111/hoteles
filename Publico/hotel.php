@@ -122,7 +122,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
 <head>
     <meta charset="UTF-8">
     <title>Reserva en <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="../styleCarlos.css">
+    <link rel="stylesheet" href="../Assets/css/astyleCarlos.css">
     <style>
         /* ... (Estilos CSS) ... */
         :root {

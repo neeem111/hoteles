@@ -50,7 +50,7 @@ $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 <head>
     <meta charset="UTF-8">
     <title>Contacto - Hoteles NESL</title>
-    <link rel="stylesheet" href="Assets/css/styleCarlos.css">
+    <link rel="stylesheet" href="../Assets/css/styleCarlos.css">
     <style>
         /* Estilos de la tarjeta de login/registro reutilizados */
         .contact-container {
