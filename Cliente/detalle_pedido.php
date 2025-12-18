@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('../conexion.php'); 
+include('../Config/conexion.php'); 
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php?error=Acceso+denegado");
@@ -50,7 +50,7 @@ if (!$detalle) {
     exit();
 }
 
-// Formatear fechas para la visualización (DD/MM/YYYY)
+// Visualización (DD/MM/YYYY)
 $check_in_es = (new DateTime($detalle['CheckIn_Date']))->format('d/m/Y');
 $check_out_es = (new DateTime($detalle['CheckOut_Date']))->format('d/m/Y');
 $booking_date_es = (new DateTime($detalle['Booking_date']))->format('d/m/Y');
@@ -103,7 +103,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
             padding-bottom: 10px;
             margin-bottom: 30px;
         }
-        /* --- ESTILOS DE NAVEGACIÓN CORREGIDOS --- */
+
         .navbar {
             background-color: #ffffff; 
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -138,7 +138,6 @@ $nombreCadena = "Hoteles Nueva España S.L.";
         .nav-link-btn:hover {
             background-color: #801933;
         }
-        /* --- FIN ESTILOS DE NAVEGACIÓN CORREGIDOS --- */
         
         .data-row {
             padding: 10px 0;
@@ -251,7 +250,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
             <hr style="margin: 30px 0;">
 
             <?php if ($invoice_id): ?>
-                <a href="../ver_factura.php?id=<?php echo $invoice_id; ?>" class="btn btn-primary" target="_blank">
+                <a href="ver_factura.php?id=<?php echo $invoice_id; ?>" class="btn btn-primary" target="_blank">
                     📄 Descargar Factura (<?php echo htmlspecialchars($invoice_number); ?>)
                 </a>
                 

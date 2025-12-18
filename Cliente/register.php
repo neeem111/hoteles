@@ -1,5 +1,5 @@
 <?php
-include("../conexion.php");
+include("../Config/conexion.php");
 
 $mensaje = "";
 
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Registro de Usuario</title>
-    <link rel="stylesheet" href="../styleCarlos.css">
+    <link rel="stylesheet" href="../Assets/css/styleCarlos.css">
 </head>
 <body>
     <div class="login-card">

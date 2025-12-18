@@ -1,6 +1,6 @@
 <?php
 session_start();
-include ('../../conexion.php');
+include ('../../Config/conexion.php');
 
 // Debe estar logueado para poder añadir al carrito
 if (!isset($_SESSION['user_id'])) {
@@ -17,7 +17,6 @@ $userEmail  = $_SESSION['user_email'] ?? '';
 $hotel_id     = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
 $room_type_id = isset($_GET['room_type_id']) ? (int)$_GET['room_type_id'] : 0;
 
-// --- NUEVA LÓGICA: RECIBIR FECHAS PRESELECCIONADAS DE hotel.php ---
 $check_in_pre = isset($_GET['check_in']) ? $_GET['check_in'] : null;
 $check_out_pre = isset($_GET['check_out']) ? $_GET['check_out'] : null;
 $price_pre = isset($_GET['price']) ? (float)$_GET['price'] : 0.0; // Recibimos el precio para pre-cargar
@@ -28,7 +27,7 @@ if ($hotel_id <= 0 || $room_type_id <= 0) {
     exit;
 }
 
-// --- 2. Cargar datos del hotel (consulta simplificada) ---
+// --- 2. Cargar datos del hotel ---
 $sqlHotel = "SELECT Id, Name, City, Address FROM Hotels WHERE Id = ?";
 $stmtH = $conn->prepare($sqlHotel);
 $stmtH->bind_param("i", $hotel_id);
@@ -62,7 +61,7 @@ $tipo = $resT->fetch_assoc();
 $stmtT->close();
 
 if (!$tipo) {
-    header("Location: ../../hotel.php?hotel_id=" . $hotel_id . "&error=Tipo+de+habitacion+no+encontrado");
+    header("Location: ../../Publico/hotel.php?hotel_id=" . $hotel_id . "&error=Tipo+de+habitacion+no+encontrado");
     exit;
 }
 
@@ -71,9 +70,6 @@ $precio_final = $price_pre > 0 ? $price_pre : (float)$tipo['CostPerNight'];
 
 
 // --- 4. Obtener rangos de fechas ya reservadas para este hotel + tipo ---
-// **IMPORTANTE**: Modificaremos esta consulta para incluir SOLO los días ocupados, 
-// no todos los rangos, si queremos que la validación JS sea más precisa.
-// Para mantener el código que ya tenías, mantendremos la lista de rangos:
 
 $sqlOcupadas = "
     SELECT 
@@ -121,7 +117,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
 <head>
     <meta charset="UTF-8">
     <title>Seleccionar fechas - <?php echo htmlspecialchars($hotel['Name']); ?></title>
-    <link rel="stylesheet" href="../../styleCarlos.css">
+    <link rel="stylesheet" href="../../Assets/css/styleCarlos.css">
     <style>
         /* [Estilos CSS: Se mantienen los tuyos, omitidos por brevedad, pero incluyendo .error-message] */
         body {
@@ -343,7 +339,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 </ul>
             <?php endif; ?>
 
-            <a href="../../hotel.php?hotel_id=<?php echo (int)$hotel['Id']; ?>" class="back-link">← Volver al hotel</a>
+            <a href="../../Publico/hotel.php?hotel_id=<?php echo (int)$hotel['Id']; ?>" class="back-link">← Volver al hotel</a>
         </div>
 
         <div class="card">

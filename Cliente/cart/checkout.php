@@ -4,7 +4,6 @@ session_start();
 // Validaciones iniciales
 if (empty($_SESSION['cart'])) {
     
-    // --- NUEVA LÓGICA DE DETECCIÓN DE RETORNO DE PAGO ---
     // Si el carrito está vacío PERO hay una variable de retorno de pago (tx, st, o custom success)
     // Asumimos que la reserva fue procesada por PayPal en un script externo (como PayPal IPN)
     // o que el usuario está volviendo de un pago.
@@ -20,10 +19,7 @@ if (empty($_SESSION['cart'])) {
         if (isset($_SESSION['user_id'])) {
             // No podemos saber el ID de las últimas reservas si el proceso fue externo,
             // pero podemos redirigir al listado general de pedidos.
-            // Necesitas implementar un script para recuperar la última factura/reserva
-            // basándote en el user_id y la fecha (muy complejo).
             
-            // --- SOLUCIÓN TEMPORAL MÁS SEGURA ---
             // Simplemente redirigimos al usuario al listado de pedidos para que vea su nuevo ítem.
             // Asume que la reserva se creó correctamente y se le dará un mensaje genérico.
             $_SESSION['cart_success'] = 'Pago CONFIRMADO. Puede ver los detalles en su historial de pedidos.';
@@ -41,17 +37,16 @@ if (empty($_SESSION['cart'])) {
     header('Location: view_cart.php');
     exit;
 }
-// --- FIN LÓGICA DE DETECCIÓN DE RETORNO DE PAGO ---
 
 
 if (!isset($_SESSION['user_id'])) {
     // Redirigir al usuario si no está logueado
-    $_SESSION['redirect_after_login'] = 'Cliente/cart/view_cart.php';
+    $_SESSION['redirect_after_login'] = 'view_cart.php';
     header("Location: ../../auth/login.php?error=Debes+iniciar+sesion+para+confirmar+la+reserva");
     exit;
 }
 
-include('../../conexion.php');
+include('../../Config/conexion.php');
 
 $cart   = $_SESSION['cart'];
 $userId = (int)$_SESSION['user_id'];
@@ -62,7 +57,7 @@ $createdReservations = [];
 // NOTA: Esta sección solo se ejecuta si el carrito NO está vacío.
 // Si el carrito SÍ está vacío, la lógica de arriba se encarga.
 
-// 1. Detección de pago con tarjeta (simulación que viene de view_cart.php)
+// 1. Detección de pago con tarjeta 
 if (isset($_GET['payment_method']) && $_GET['payment_method'] === 'card_successful') {
     $paymentMethodGlobal = 'Tarjeta Crédito';
 } 
@@ -101,7 +96,6 @@ try {
             throw new Exception('Datos incompletos en el carrito.');
         }
 
-        // --- MANEJO DE FECHAS PARA BBDD Y VISUALIZACIÓN ---
         $check_in_es = (new DateTime($check_in))->format('d/m/Y');
         $check_out_es = (new DateTime($check_out))->format('d/m/Y');
 
@@ -173,7 +167,6 @@ try {
         $stmtItem->execute();
         $stmtItem->close();
 
-        // --- FIN GENERACIÓN FACTURA ---
 
         // Obtener nombre del hotel
         $hotelName = 'Hotel #' . $hotelId;

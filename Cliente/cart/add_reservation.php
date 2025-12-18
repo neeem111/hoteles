@@ -2,14 +2,14 @@
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../Cliente/index.php');
+    header('Location: ../index.php');
     exit;
 }
 
 // Debe estar logueado para añadir al carrito
 if (!isset($_SESSION['user_id'])) {
-    $_SESSION['redirect_after_login'] = '../Cliente/index.php';
-    header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+añadir+al+carrito");
+    $_SESSION['redirect_after_login'] = '../index.php';
+    header("Location: ../../auth/login.php?error=Debes+iniciar+sesion+para+añadir+al+carrito");
     exit;
 }
 
@@ -24,7 +24,7 @@ $num_rooms       = isset($_POST['num_rooms']) ? intval($_POST['num_rooms']) : 1;
 // Validación básica de campos requeridos
 if ($hotel_id <= 0 || $room_type_id <= 0 || $price_per_night <= 0 || $check_in === '' || $check_out === '' || $num_rooms <= 0) {
     $_SESSION['cart_error'] = 'Datos incompletos al añadir la habitación al carrito.';
-    header('Location: ../Cliente/index.php');
+    header('Location: ../index.php');
     exit;
 }
 
@@ -36,7 +36,7 @@ try {
     // 1. Validar que la salida sea estrictamente posterior a la entrada
     if ($checkOutDate <= $checkInDate) {
         $_SESSION['cart_error'] = 'La fecha de salida debe ser posterior a la fecha de entrada. Por favor, revisa tus fechas.';
-        header('Location: ../Cliente/index.php');
+        header('Location: ../index.php');
         exit;
     }
     
@@ -47,10 +47,9 @@ try {
 } catch (Exception $e) {
     // Esto captura errores si el formato de fecha es totalmente irreconocible
     $_SESSION['cart_error'] = 'Fechas inválidas o con formato incorrecto.';
-    header('Location: ../Cliente/index.php');
+    header('Location: ../index.php');
     exit;
 }
-// --- FIN DE VALIDACIÓN DE FECHAS CRÍTICA ---
 
 
 // Inicializar carrito si no existe
@@ -59,7 +58,6 @@ if (!isset($_SESSION['cart'])) {
 }
 
 /**
- * Lógica de adición al carrito:
  * Si ya existe el mismo hotel con el mismo tipo y fechas, se suman habitaciones.
  */
 if (isset($_SESSION['cart'][$hotel_id])) {
@@ -72,16 +70,17 @@ if (isset($_SESSION['cart'][$hotel_id])) {
         $item['check_in'] === $check_in &&
         $item['check_out'] === $check_out
     ) {
-        $item['cantidad'] += $num_rooms; // cantidad = nº habitaciones
+        $item['cantidad'] += $num_rooms; 
     } else {
+
         // Si es otro tipo/fechas, sobreescribimos (simplificación para el proyecto)
         // NOTA: En un proyecto real, esto debería ser un nuevo ítem en el carrito,
         // usando una clave compuesta, no sobrescribiendo el hotel completo.
         $item = [
             'hotel_id'     => $hotel_id,
-            'precio'       => $price_per_night, // precio por noche
+            'precio'       => $price_per_night, 
             'nights'       => $nights,
-            'cantidad'     => $num_rooms,       // nº de habitaciones
+            'cantidad'     => $num_rooms,       
             'check_in'     => $check_in,
             'check_out'    => $check_out,
             'room_type_id' => $room_type_id,
@@ -92,9 +91,9 @@ if (isset($_SESSION['cart'][$hotel_id])) {
     // Nuevo hotel en el carrito
     $_SESSION['cart'][$hotel_id] = [
         'hotel_id'     => $hotel_id,
-        'precio'       => $price_per_night, // precio por noche
+        'precio'       => $price_per_night, 
         'nights'       => $nights,
-        'cantidad'     => $num_rooms,       // nº de habitaciones
+        'cantidad'     => $num_rooms,      
         'check_in'     => $check_in,
         'check_out'    => $check_out,
         'room_type_id' => $room_type_id,
