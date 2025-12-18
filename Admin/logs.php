@@ -116,7 +116,7 @@ $result = $conn->query($sql);
 
 </div>
 
-<script src="../keepalive.js"></script>
+<script src="../Assets/js/keepalive.js"></script>
 
 </body>
 </html>

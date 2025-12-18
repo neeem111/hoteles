@@ -185,7 +185,7 @@ unset($_SESSION['room_msg']);
 
 </div>
 
-<script src="../keepalive.js"></script>
+<script src="../Assets/js/keepalive.js"></script>
 
 </body>
 </html>

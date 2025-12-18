@@ -257,6 +257,6 @@ if (isset($_SESSION['admin_gate']) && $_SESSION['admin_gate'] === true) {
     </div>
 
 <?php endif; ?>
-<script src="../keepalive.js"></script>
+<script src="../Assets/js/keepalive.js"></script>
 </body>
 </html>
