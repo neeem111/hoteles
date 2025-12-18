@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('../conexion.php');
+include('../Config/conexion.php');
 
 if (!isset($_SESSION['user_id'])) {
     die("Acceso denegado. Inicia sesión.");
@@ -126,9 +126,7 @@ $itemsResult = $stmtItems->get_result();
         }
         .btn-print { background: #a02040; }
         
-        /* === CORRECCIÓN CRÍTICA DE IMPRESIÓN === */
         @page {
-            /* Forzar la orientación horizontal (Landscape) y reducir márgenes */
             size: A4 landscape;
             margin: 10mm; 
         }
@@ -162,7 +160,6 @@ $itemsResult = $stmtItems->get_result();
                 display: none; /* Ocultar botones */
             }
         }
-        /* ======================================= */
     </style>
 </head>
 <body>

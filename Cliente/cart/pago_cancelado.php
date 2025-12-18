@@ -1,7 +1,6 @@
 <?php
 session_start();
-// Ajusta la ruta si view_cart.php está en una subcarpeta (ej: Cliente/cart/)
-include('../conexion.php'); 
+include('../../Config/conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
@@ -225,7 +224,7 @@ foreach ($cart as $id => $item) {
     <?php if (empty($cart)): ?>
         <div style="text-align: center; padding: 40px;">
             <p style="font-size: 1.2rem; color: #868e96; margin-bottom: 20px;">Tu carrito está vacío actualmente.</p>
-            <a href="../Cliente/index.php" class="btn btn-login">Explorar Hoteles</a>
+            <a href="../index.php" class="btn btn-login">Explorar Hoteles</a>
         </div>
     <?php else: ?>
 
@@ -285,7 +284,7 @@ foreach ($cart as $id => $item) {
         
         <div class="cart-footer">
             <div>
-                <a href="../Cliente/index.php" class="btn btn-ghost">← Seguir Buscando</a>
+                <a href="../index.php" class="btn btn-ghost">← Seguir Buscando</a>
             </div>
             
             <div class="actions">
@@ -310,7 +309,7 @@ foreach ($cart as $id => $item) {
                     </form>
 
                 <?php else: ?>
-                    <a href="../auth/login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">
+                    <a href="../../auth/login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">
                         🔐 Iniciar Sesión para Pagar
                     </a>
                 <?php endif; ?>

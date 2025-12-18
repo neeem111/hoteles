@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Ajusta la ruta si es necesario
-include('../../conexion.php'); 
+include('../../Config/conexion.php'); 
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
@@ -192,7 +192,7 @@ function format_date_es($date) {
     <?php if (empty($cart)): ?>
         <div style="text-align: center; padding: 40px;">
             <p style="font-size: 1.2rem; color: #868e96; margin-bottom: 20px;">Tu carrito está vacío actualmente.</p>
-            <a href="../Cliente/index.php" class="btn btn-login">Explorar Hoteles</a>
+            <a href="../index.php" class="btn btn-login">Explorar Hoteles</a>
         </div>
     <?php else: ?>
 
@@ -253,7 +253,7 @@ function format_date_es($date) {
 
         <div class="cart-footer">
             <div>
-                <a href="../Cliente/index.php" class="btn btn-ghost">← Seguir Buscando</a>
+                <a href="../index.php" class="btn btn-ghost">← Seguir Buscando</a>
             </div>
             
             <div class="actions">
@@ -276,7 +276,7 @@ function format_date_es($date) {
                         <button type="submit" class="btn btn-paypal">Pagar con PayPal 💳</button>
                     </form>
                 <?php else: ?>
-                    <a href="../auth/login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">🔐 Iniciar Sesión para Pagar</a>
+                    <a href="../../auth/login.php?error=Inicia+sesion+para+pagar" class="btn btn-login">🔐 Iniciar Sesión para Pagar</a>
                 <?php endif; ?>
             </div>
         </div>

@@ -21,20 +21,16 @@ $incrementoPorCiudad = [
 $is_logged_in = isset($_SESSION['user_id']);
 $user_name = $is_logged_in ? htmlspecialchars($_SESSION['user_name']) : '';
 
-// *** RUTA DE INCLUSIÓN CORREGIDA: sube un nivel (../) para encontrar conexion.php ***
-// Asumiendo que index.php está dentro de /Cliente
-include('../conexion.php'); 
+include('../Config/conexion.php'); 
 
 // Parámetros de filtrado
 $filtroCiudad = isset($_GET['ciudad']) ? $_GET['ciudad'] : '';
-// --- INICIO: Recepción de Fechas ---
+
 $check_in_filter = isset($_GET['check_in']) ? $_GET['check_in'] : date('Y-m-d'); // Usar hoy como defecto
 $check_out_filter = isset($_GET['check_out']) ? $_GET['check_out'] : date('Y-m-d', strtotime('+1 day')); // Mañana como defecto
-// --- FIN: Recepción de Fechas ---
 
 // Verificar que la conexión sea exitosa
 if ($conn->connect_error) {
-    // Nota: En producción es mejor no mostrar este error directamente al usuario.
     die("Error de conexión, revisa conexion.php");
 }
 
@@ -61,14 +57,11 @@ if (!empty($filtroCiudad) && in_array($filtroCiudad, $ciudadesDisponibles)) {
 }
 
 if ($resultado && $resultado->num_rows > 0) {
-    // Si hay resultados, almacenarlos en un array
     while($row = $resultado->fetch_assoc()) {
         
-        // --- APLICACIÓN DE LA NUEVA LÓGICA ---
         $ciudadHotel = $row['City'];
         // Asignamos el precio base como el precio 'Desde'
         $row['PrecioDesde'] = $tarifasBase[$ciudadHotel] ?? 50; // 50 como fallback seguro
-        // -------------------------------------
         
         $hoteles[] = $row;
     }
@@ -214,7 +207,7 @@ if ($stmt) {
             transform: translateX(-50%);
         }
 
-        /* --- Estilos del Filtro de Búsqueda (CRÍTICO para la alineación) --- */
+        /* --- Estilos del Filtro de Búsqueda --- */
         .search-filter {
             background-color: white;
             padding: 25px;
@@ -231,7 +224,7 @@ if ($stmt) {
             flex-wrap: wrap; 
             justify-content: center; 
             gap:20px; 
-            align-items: flex-end; /* SOLUCIÓN DE ALINEACIÓN VERTICAL */
+            align-items: flex-end;
         }
         .search-filter label {
             font-weight: 600;
@@ -291,8 +284,6 @@ if ($stmt) {
             text-align: center;
             display: none; /* Oculto por defecto */
         }
-
-        /* --- Estilos de la Cuadrícula de Hoteles (Original) --- */
         .hotel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -355,7 +346,7 @@ if ($stmt) {
     <?php endif; ?>
             
             <div class="cart-icon">
-                <a href="../Cliente/cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
+                <a href="../cart/view_cart.php" title="Ver Carrito">🛒 Carrito</a> 
             </div>
 
             <?php if ($is_logged_in): ?>
@@ -443,7 +434,7 @@ if ($stmt) {
                                 Desde <strong>$<?php echo $hotel['PrecioDesde']; ?></strong>/noche 
                             </div>
                             
-                            <a href="../hotel.php?hotel_id=<?php echo $hotel['Id']; ?>&check_in=<?php echo urlencode($check_in_filter); ?>&check_out=<?php echo urlencode($check_out_filter); ?>" class="btn-reserve">
+                            <a href="../Publico/hotel.php?hotel_id=<?php echo $hotel['Id']; ?>&check_in=<?php echo urlencode($check_in_filter); ?>&check_out=<?php echo urlencode($check_out_filter); ?>" class="btn-reserve">
                                 Ver Habitaciones
                             </a>
                         </div>
@@ -458,7 +449,7 @@ if ($stmt) {
     </div>
     
     <footer class="footer">
-        <p>&copy; <?php echo date("Y"); ?> <?php echo $nombreCadena; ?>. | <a href="../aviso_legal.php">Aviso Legal</a> | <a href="../contacto.php">Contáctanos</a></p>
+        <p>&copy; <?php echo date("Y"); ?> <?php echo $nombreCadena; ?>. | <a href="../Publico/aviso_legal.php">Aviso Legal</a> | <a href="../Publico/contacto.php">Contáctanos</a></p>
     </footer>
 
 <script>

@@ -1,7 +1,6 @@
 <?php
 session_start();
-// La ruta de conexión es correcta, asumiendo que mis_pedidos.php está en Cliente/
-include('../conexion.php'); 
+include('../Config/conexion.php'); 
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php?error=Debes+iniciar+sesion+para+ver+tus+pedidos");
