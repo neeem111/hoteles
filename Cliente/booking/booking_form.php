@@ -338,17 +338,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
 
             <hr style="border:none;border-top:1px solid #eee;margin:15px 0;">
 
-            <p class="section-title">Fechas ya reservadas para este tipo</p>
-            <?php if (count($rangosOcupados) === 0): ?>
-                <p class="hint">Por ahora no hay reservas registradas para este tipo de habitación.</p>
-            <?php else: ?>
-                <p class="hint">Evita seleccionar fechas que se solapen con estos rangos:</p>
-                <ul class="occupied-list">
-                    <?php foreach ($rangosOcupados as $r): ?>
-                        <li>Del <?php echo htmlspecialchars($r['start']); ?> al <?php echo htmlspecialchars($r['end']); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            <?php endif; ?>
+    
 
             <a href="../../Publico/hotel.php?hotel_id=<?php echo (int)$hotel['Id']; ?>" class="back-link">← Volver al hotel</a>
         </div>
