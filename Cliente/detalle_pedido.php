@@ -198,6 +198,10 @@ $nombreCadena = "Hoteles Nueva España S.L.";
                     <?php echo htmlspecialchars($detalle['Status']); ?>
                 </span>
             </div>
+            <div class="data-row">
+                <strong>Método de pago:</strong>
+                <span><?php echo htmlspecialchars($payment_method); ?></span>
+            </div>
             
 
             <h2>Detalles de la Estancia</h2>
