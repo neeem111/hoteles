@@ -57,7 +57,7 @@ $sqlTipo = "SELECT
                 rt.Name,
                 rt.Guests,
                 rt.CostPerNight
-            FROM RoomType rt
+            FROM roomType rt
             WHERE rt.Id = ?";
 
 $stmtT = $conn->prepare($sqlTipo);
@@ -396,7 +396,7 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                         value="1"
                         required
                     >
-                    <small class="hint">Máximo permitido: <?php echo (int)$max_rooms_pre; ?> habitaciones para este tipo.</small>
+                    <div class="hint" id="availability-hint"></div>
                 </div>
 
                 <div class="field">
@@ -418,101 +418,89 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
 </div>
 
 <script>
-    // Pasar los rangos de reserva ocupados a JavaScript
-    const occupiedRanges = <?php echo $rangosOcupados_json; ?>;
-    const form = document.getElementById('booking-form');
     const checkInInput = document.getElementById('check_in');
     const checkOutInput = document.getElementById('check_out');
-    const errorDiv = document.getElementById('date-overlap-error');
-    const addToCartBtn = document.getElementById('add-to-cart-btn');
     const numRoomsInput = document.getElementById('num_rooms');
-    const maxRooms = <?php echo (int)$max_rooms_pre; ?>;
+    const hint = document.getElementById('availability-hint');
+    const addBtn = document.getElementById('add-to-cart-btn');
+    const errorDiv = document.getElementById('date-overlap-error');
 
-    // Función auxiliar para convertir fecha YYYY-MM-DD a objeto Date
-    function parseDate(dateString) {
-        const parts = dateString.split('-');
-        // new Date(year, monthIndex, day) - monthIndex es 0-based
-        return new Date(parts[0], parts[1] - 1, parts[2]);
+    async function refreshAvailability() {
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    hint.textContent = '';
+    addBtn.disabled = false;
+    addBtn.classList.remove('disabled-btn');
+
+    const check_in = checkInInput.value;
+    const check_out = checkOutInput.value;
+
+    if (!check_in || !check_out) return;
+
+    const inDate = new Date(check_in);
+    const outDate = new Date(check_out);
+
+    if (outDate <= inDate) {
+        errorDiv.textContent = 'La salida debe ser posterior a la entrada.';
+        errorDiv.style.display = 'block';
+        addBtn.disabled = true;
+        addBtn.classList.add('disabled-btn');
+        numRoomsInput.max = 1;
+        numRoomsInput.value = 1;
+        return;
     }
 
-    // Función CRÍTICA: Verificar si el rango solicitado solapa con un rango ocupado
-    function checkOverlap() {
-        errorDiv.style.display = 'none';
-        addToCartBtn.classList.remove('disabled-btn');
-        addToCartBtn.disabled = false;
+    const url = `check_availability.php?hotel_id=<?php echo (int)$hotel['Id']; ?>&room_type_id=<?php echo (int)$tipo['Id']; ?>&check_in=${encodeURIComponent(check_in)}&check_out=${encodeURIComponent(check_out)}`;
 
-        const checkInValue = checkInInput.value;
-        const checkOutValue = checkOutInput.value;
+    try {
+        const res = await fetch(url, { cache: 'no-store' });
+        const data = await res.json();
 
-        if (!checkInValue || !checkOutValue) {
-            // No podemos validar sin fechas, pero permitimos el envío (la validación PHP se encargará)
-            return;
+        if (!data.ok) {
+        errorDiv.textContent = data.error || 'No se pudo validar disponibilidad.';
+        errorDiv.style.display = 'block';
+        addBtn.disabled = true;
+        addBtn.classList.add('disabled-btn');
+        numRoomsInput.max = 1;
+        numRoomsInput.value = 1;
+        return;
         }
 
-        const newStart = parseDate(checkInValue);
-        const newEnd = parseDate(checkOutValue);
+        const available = parseInt(data.available, 10) || 0;
 
-        // 1. Validación de orden de fechas (Check-out debe ser después de Check-in)
-        if (newEnd <= newStart) {
-            errorDiv.textContent = 'La salida debe ser posterior a la entrada.';
-            errorDiv.style.display = 'block';
-            addToCartBtn.classList.add('disabled-btn');
-            addToCartBtn.disabled = true;
-            return;
+        if (available <= 0) {
+        hint.textContent = 'No hay habitaciones disponibles para ese rango.';
+        addBtn.disabled = true;
+        addBtn.classList.add('disabled-btn');
+        numRoomsInput.max = 1;
+        numRoomsInput.value = 1;
+        return;
         }
 
-        // 2. Validación de solapamiento con reservas existentes
-        for (const range of occupiedRanges) {
-            const occupiedStart = parseDate(range.start);
-            const occupiedEnd = parseDate(range.end);
+        hint.textContent = `Disponibles para esas fechas: ${available}`;
+        numRoomsInput.max = available;
 
-            // Criterio de solapamiento:
-            // Ocupado si (nueva entrada < fecha fin ocupada) Y (nueva salida > fecha inicio ocupada)
-            if (newStart < occupiedEnd && newEnd > occupiedStart) {
-                errorDiv.textContent = '⚠️ El rango de fechas seleccionado se solapa con una reserva existente. Por favor, selecciona otras fechas.';
-                errorDiv.style.display = 'block';
-                addToCartBtn.classList.add('disabled-btn');
-                addToCartBtn.disabled = true;
-                return;
-            }
-        }
+        const current = parseInt(numRoomsInput.value, 10) || 1;
+        if (current > available) numRoomsInput.value = available;
+        if (current < 1) numRoomsInput.value = 1;
+
+    } catch (e) {
+        errorDiv.textContent = 'Error de conexión al validar disponibilidad.';
+        errorDiv.style.display = 'block';
+        addBtn.disabled = true;
+        addBtn.classList.add('disabled-btn');
+        numRoomsInput.max = 1;
+        numRoomsInput.value = 1;
     }
-    
-    // Asignar el listener a los cambios de fecha
-    checkInInput.addEventListener('change', checkOverlap);
-    checkOutInput.addEventListener('change', checkOverlap);
-
-    // Ejecutar al cargar la página si las fechas ya están pre-rellenas
-    if (checkInInput.value && checkOutInput.value) {
-        checkOverlap();
     }
 
-    // Validar y limitar el número de habitaciones al máximo disponible
-    if (numRoomsInput) {
-        numRoomsInput.addEventListener('input', function (e) {
-            let value = parseInt(e.target.value, 10);
+    checkInInput.addEventListener('change', refreshAvailability);
+    checkOutInput.addEventListener('change', refreshAvailability);
+    numRoomsInput.addEventListener('input', refreshAvailability);
 
-            if (isNaN(value) || value < 1) {
-                e.target.value = 1;
-                return;
-            }
-
-            if (value > maxRooms) {
-                e.target.value = maxRooms;
-            }
-        });
-
-        numRoomsInput.addEventListener('blur', function (e) {
-            let value = parseInt(e.target.value, 10);
-
-            if (isNaN(value) || value < 1) {
-                e.target.value = 1;
-            } else if (value > maxRooms) {
-                e.target.value = maxRooms;
-            }
-        });
-    }
+    if (checkInInput.value && checkOutInput.value) refreshAvailability();
 </script>
+
 
 </body>
 </html>
