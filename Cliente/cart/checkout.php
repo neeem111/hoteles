@@ -151,11 +151,11 @@ try {
         $stmtInv->close();
 
         $descItem = "Estancia Hotel ($nights noches)";
-        $qtyItem  = 1;
+        $qtyItem  = $roomsCount;
 
         $sqlItem = "INSERT INTO InvoiceItems (Id_Invoice, Description, Quantity, UnitPrice, Total) VALUES (?, ?, ?, ?, ?)";
         $stmtItem = $conn->prepare($sqlItem);
-        $stmtItem->bind_param("isidd", $invoiceId, $descItem, $qtyItem, $baseImponible, $baseImponible);
+        $stmtItem->bind_param("isidd", $invoiceId, $descItem, $qtyItem, $priceNight, $baseImponible);
         $stmtItem->execute();
         $stmtItem->close();
 
