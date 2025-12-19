@@ -17,13 +17,20 @@ $userEmail  = $_SESSION['user_email'] ?? '';
 $hotel_id     = isset($_GET['hotel_id']) ? (int)$_GET['hotel_id'] : 0;
 $room_type_id = isset($_GET['room_type_id']) ? (int)$_GET['room_type_id'] : 0;
 
-$check_in_pre = isset($_GET['check_in']) ? $_GET['check_in'] : null;
+$check_in_pre  = isset($_GET['check_in']) ? $_GET['check_in'] : null;
 $check_out_pre = isset($_GET['check_out']) ? $_GET['check_out'] : null;
-$price_pre = isset($_GET['price']) ? (float)$_GET['price'] : 0.0; // Recibimos el precio para pre-cargar
+$price_pre     = isset($_GET['price']) ? (float)$_GET['price'] : 0.0; // Recibimos el precio para pre-cargar
+$max_rooms_pre = isset($_GET['max_rooms']) ? (int)$_GET['max_rooms'] : 1; // Número máximo de habitaciones disponibles para este tipo
 
 // Validación básica de IDs (las fechas se validarán más abajo)
 if ($hotel_id <= 0 || $room_type_id <= 0) {
     header("Location: ../index.php?error=Hotel+o+habitacion+no+valido");
+    exit;
+}
+
+// Si por algún motivo el número máximo de habitaciones es menor que 1, redirigimos
+if ($max_rooms_pre < 1) {
+    header("Location: ../../Publico/hotel.php?hotel_id=" . $hotel_id . "&error=No+hay+habitaciones+disponibles+para+este+tipo");
     exit;
 }
 
@@ -311,6 +318,10 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                 <span class="summary-label">Capacidad máx.:</span>
                 <span class="summary-value"><?php echo (int)$tipo['Guests']; ?> huéspedes</span>
             </div>
+            <div class="summary-row">
+                <span class="summary-label">Habitaciones libres para estas fechas:</span>
+                <span class="summary-value"><?php echo (int)$max_rooms_pre; ?></span>
+            </div>
             <div style="margin-top:10px;">
                 <span class="price-highlight">
                     <?php echo number_format($precio_final, 2); ?> €/noche
@@ -390,11 +401,12 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
                         type="number" 
                         name="num_rooms" 
                         id="num_rooms" 
-                        min="1" 
+                        min="1"
+                        max="<?php echo (int)$max_rooms_pre; ?>"
                         value="1"
                         required
-                        readonly
                     >
+                    <small class="hint">Máximo permitido: <?php echo (int)$max_rooms_pre; ?> habitaciones para este tipo.</small>
                 </div>
 
                 <div class="field">
@@ -423,6 +435,8 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
     const checkOutInput = document.getElementById('check_out');
     const errorDiv = document.getElementById('date-overlap-error');
     const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const numRoomsInput = document.getElementById('num_rooms');
+    const maxRooms = <?php echo (int)$max_rooms_pre; ?>;
 
     // Función auxiliar para convertir fecha YYYY-MM-DD a objeto Date
     function parseDate(dateString) {
@@ -481,6 +495,32 @@ unset($_SESSION['cart_error'], $_SESSION['cart_success']);
     // Ejecutar al cargar la página si las fechas ya están pre-rellenas
     if (checkInInput.value && checkOutInput.value) {
         checkOverlap();
+    }
+
+    // Validar y limitar el número de habitaciones al máximo disponible
+    if (numRoomsInput) {
+        numRoomsInput.addEventListener('input', function (e) {
+            let value = parseInt(e.target.value, 10);
+
+            if (isNaN(value) || value < 1) {
+                e.target.value = 1;
+                return;
+            }
+
+            if (value > maxRooms) {
+                e.target.value = maxRooms;
+            }
+        });
+
+        numRoomsInput.addEventListener('blur', function (e) {
+            let value = parseInt(e.target.value, 10);
+
+            if (isNaN(value) || value < 1) {
+                e.target.value = 1;
+            } else if (value > maxRooms) {
+                e.target.value = maxRooms;
+            }
+        });
     }
 </script>
 

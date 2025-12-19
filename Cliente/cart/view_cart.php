@@ -29,7 +29,7 @@ $total = 0;
 foreach ($cart as $id => $item) {
     $nights     = isset($item['nights']) ? (int)$item['nights'] : 1;
     $roomsCount = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
-    $total += $item['precio'] * $nights * $roomsCount;
+    $total += $item['precio'] * $nights * $roomsCount + ( $item['precio'] * $nights * $roomsCount) *0.21;
 }
 
 // --- FUNCIÓN DE UTILIDAD PARA FORMATO DE FECHA ---
@@ -258,7 +258,7 @@ function format_date_es($date) {
             
             <div class="actions">
                 <div class="total-price">
-                    Total: <strong>$<?php echo number_format($total, 2); ?></strong>
+                    Total (IVA incluido): <strong>$<?php echo number_format($total, 2); ?></strong>
                 </div>
 
                 <?php if (isset($_SESSION['user_id'])): ?>

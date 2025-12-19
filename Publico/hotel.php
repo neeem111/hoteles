@@ -267,7 +267,7 @@ $nombreCadena = "Hoteles Nueva España S.L.";
                         <strong>$<?php echo htmlspecialchars($room['PrecioNoche']); ?></strong>
                         <p style="color: #999;">Precio por noche</p>
 
-                        <a href="../Cliente/booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id_RoomType']; ?>&check_in=<?php echo urlencode($check_in); ?>&check_out=<?php echo urlencode($check_out); ?>&price=<?php echo $room['PrecioNoche']; ?>" class="btn-select">
+                        <a href="../Cliente/booking/booking_form.php?hotel_id=<?php echo $hotel['Id']; ?>&room_type_id=<?php echo $room['Id_RoomType']; ?>&check_in=<?php echo urlencode($check_in); ?>&check_out=<?php echo urlencode($check_out); ?>&price=<?php echo $room['PrecioNoche']; ?>&max_rooms=<?php echo (int)$room['AvailableRooms']; ?>" class="btn-select">
                             Seleccionar
                         </a>
                     </div>

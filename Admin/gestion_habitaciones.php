@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || strcasecmp($_SESSION['user_role'], 'Administ
 include("../Config/conexion.php");
 
 // 1. Consulta para obtener todas las habitaciones con detalles del hotel y tipo
-// IMPORTANTE: Se usa R.Id como referencia en lugar de Room_Number
+// IMPORTANTE: Se usa R.Id como referencia
 $sql = "SELECT 
             R.Id AS RoomId,
             R.Available,
